@@ -1035,7 +1035,7 @@ class GraphService {
     async getGroupEligibleAssignments(groupId) {
         try {
             const response = await this.get(
-                `${this.baseUrl}/identityGovernance/privilegedAccess/group/eligibilityScheduleInstances?$filter=groupId eq '${groupId}'`
+                `${this.baseUrl}/identityGovernance/privilegedAccess/group/eligibilityScheduleInstances?$filter=groupId eq '${groupId}'&$expand=principal`
             );
             return {
                 success: true,
@@ -1056,7 +1056,7 @@ class GraphService {
     async getGroupActiveAssignments(groupId) {
         try {
             const response = await this.get(
-                `${this.baseUrl}/identityGovernance/privilegedAccess/group/assignmentScheduleInstances?$filter=groupId eq '${groupId}'`
+                `${this.baseUrl}/identityGovernance/privilegedAccess/group/assignmentScheduleInstances?$filter=groupId eq '${groupId}'&$expand=principal`
             );
             return {
                 success: true,

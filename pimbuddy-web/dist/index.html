@@ -4,13 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PIMBuddy - Privileged Identity Management</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00d9ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PIMBuddy">
+
     <!-- Distinctive Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&family=Orbitron:wght@900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script type="module" crossorigin src="/assets/index-B1Kozwx9.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-BHpv27kt.css">
+  <script type="module" crossorigin src="/assets/index-D2yQ3pK2.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/vendor-libs-DR0WLJdd.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-msal-_oisOUhb.js">
+  <link rel="modulepreload" crossorigin href="/assets/utils-B68CIlTQ.js">
+  <link rel="modulepreload" crossorigin href="/assets/services-DF6cB9Vv.js">
+  <link rel="modulepreload" crossorigin href="/assets/core-rjX7nIO3.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-dashboardpage-BK0TZRHp.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-groupspage-CcLYulAn.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-rolespage-NLhHTgT_.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-activitypage-CAtFiV2V.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-approvalspage-qJI2tH0l.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-expiringpage-BJ2WTLHw.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-healthcheckpage-u55GC4hw.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-coveragepage-Bn2Weqhu.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-pimmaidpage-GmsR1KOG.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-policiespage-7QgKjrIf.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-templatespage-C40ZrFiw.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-exportpage-BJblAL28.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-settingspage-CK1_T0S5.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-baselinepage-QRc0DzZg.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-activationspage-Ctb9nQuK.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-DmGEjUqu.css">
 </head>
 <body>
     <div id="app">
@@ -193,5 +221,115 @@
         </div>
     </div>
 
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('[PWA] Service Worker registered:', registration.scope);
+
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New service worker available
+                                    console.log('[PWA] New version available! Refresh to update.');
+
+                                    // Optional: Show update notification to user
+                                    if (window.showToast) {
+                                        const toast = document.createElement('div');
+                                        toast.className = 'toast toast-info';
+                                        toast.innerHTML = `
+                                            <div class="toast-content">
+                                                <i class="fas fa-info-circle"></i>
+                                                <span>New version available! <a href="#" onclick="window.location.reload(); return false;" style="color: var(--accent-primary); text-decoration: underline;">Refresh now</a></span>
+                                            </div>
+                                        `;
+                                        document.getElementById('toast-container')?.appendChild(toast);
+                                        setTimeout(() => toast.remove(), 10000);
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch((error) => {
+                        console.log('[PWA] Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // Install prompt for PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Show install button/banner (can be implemented later)
+            console.log('[PWA] Install prompt available');
+
+            // Optional: Show install banner
+            setTimeout(() => {
+                if (deferredPrompt && !localStorage.getItem('pwa-install-dismissed')) {
+                    const installBanner = document.createElement('div');
+                    installBanner.style.cssText = `
+                        position: fixed;
+                        bottom: 20px;
+                        right: 20px;
+                        background: var(--bg-secondary);
+                        border: 1px solid var(--border-color);
+                        border-radius: var(--radius-lg);
+                        padding: 1rem 1.5rem;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                        z-index: 9999;
+                        max-width: 300px;
+                        animation: slideIn 0.3s ease;
+                    `;
+                    installBanner.innerHTML = `
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-download" style="color: var(--accent-primary);"></i>
+                                <strong>Install PIMBuddy</strong>
+                            </div>
+                            <p style="margin: 0; font-size: 0.875rem; color: var(--text-secondary);">
+                                Install as an app for quick access and offline support.
+                            </p>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-primary btn-sm" id="install-pwa-btn" style="flex: 1;">
+                                    Install
+                                </button>
+                                <button class="btn btn-secondary btn-sm" id="dismiss-install-btn" style="flex: 1;">
+                                    Not now
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(installBanner);
+
+                    document.getElementById('install-pwa-btn')?.addEventListener('click', async () => {
+                        if (deferredPrompt) {
+                            deferredPrompt.prompt();
+                            const { outcome } = await deferredPrompt.userChoice;
+                            console.log('[PWA] User choice:', outcome);
+                            deferredPrompt = null;
+                            installBanner.remove();
+                        }
+                    });
+
+                    document.getElementById('dismiss-install-btn')?.addEventListener('click', () => {
+                        localStorage.setItem('pwa-install-dismissed', 'true');
+                        installBanner.remove();
+                    });
+                }
+            }, 5000); // Show after 5 seconds
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('[PWA] App installed successfully');
+            deferredPrompt = null;
+        });
+    </script>
 </body>
 </html>
