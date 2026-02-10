@@ -1,0 +1,18 @@
+{
+  "name": "pimbuddy-web",
+  "version": "1.0.0",
+  "description": "Privileged Identity Management Tool for Microsoft Entra ID - Web Version",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@azure/msal-browser": "^3.10.0",
+    "@microsoft/microsoft-graph-client": "^3.0.7"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

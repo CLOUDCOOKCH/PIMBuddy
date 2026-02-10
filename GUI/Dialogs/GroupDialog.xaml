@@ -1,0 +1,135 @@
+<Window x:Class="PIMBuddy.GroupDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Create PIM Group"
+        Height="550" Width="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <TextBlock Text="Create PIM Group" Style="{StaticResource SubheaderText}"/>
+            <TextBlock Text="Create a new role-assignable security group for Privileged Identity Management"
+                       Style="{StaticResource CaptionText}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Form -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Display Name -->
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="Display Name *" Style="{StaticResource BodyText}" Margin="0,0,0,4"/>
+                    <TextBox x:Name="DisplayNameTextBox" Style="{StaticResource ModernTextBox}"/>
+                    <TextBlock x:Name="DisplayNameError" Text="" Foreground="{DynamicResource ErrorBrush}"
+                               FontSize="12" Margin="0,4,0,0" Visibility="Collapsed"/>
+                </StackPanel>
+
+                <!-- Description -->
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="Description" Style="{StaticResource BodyText}" Margin="0,0,0,4"/>
+                    <TextBox x:Name="DescriptionTextBox" Style="{StaticResource ModernTextBox}"
+                             TextWrapping="Wrap" AcceptsReturn="True" Height="80"
+                             VerticalScrollBarVisibility="Auto"/>
+                </StackPanel>
+
+                <!-- Mail Nickname -->
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="Mail Nickname *" Style="{StaticResource BodyText}" Margin="0,0,0,4"/>
+                    <TextBox x:Name="MailNicknameTextBox" Style="{StaticResource ModernTextBox}"/>
+                    <TextBlock Text="Used as the group's email alias. Letters, numbers, hyphens, and underscores only."
+                               Style="{StaticResource CaptionText}" Margin="0,4,0,0"/>
+                    <TextBlock x:Name="MailNicknameError" Text="" Foreground="{DynamicResource ErrorBrush}"
+                               FontSize="12" Margin="0,4,0,0" Visibility="Collapsed"/>
+                </StackPanel>
+
+                <!-- Role Assignable Info -->
+                <Border Background="{DynamicResource NavBackgroundBrush}" CornerRadius="4" Padding="12" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="&#xE946;" FontFamily="{StaticResource IconFont}"
+                                   FontSize="20" Foreground="{DynamicResource PrimaryBrush}"
+                                   VerticalAlignment="Top" Margin="0,0,12,0"/>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Role-Assignable Group" Style="{StaticResource TitleText}"/>
+                            <TextBlock Style="{StaticResource CaptionText}" TextWrapping="Wrap">
+                                This group will be created with IsAssignableToRole = true, which enables it for PIM and role assignments.
+                                Note: This setting cannot be changed after creation.
+                            </TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Initial Owners -->
+                <Expander Header="Initial Owners (Optional)" Style="{StaticResource ModernExpander}" Margin="0,0,0,16">
+                    <StackPanel Margin="0,8,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="OwnerSearchBox" Grid.Column="0" Style="{StaticResource ModernTextBox}"
+                                     Tag="Search for users..."/>
+                            <Button x:Name="AddOwnerButton" Grid.Column="1" Style="{StaticResource SecondaryButton}"
+                                    Content="Add" Margin="8,0,0,0" Padding="16,10"/>
+                        </Grid>
+                        <ListBox x:Name="OwnersListBox" Style="{StaticResource ModernListView}"
+                                 ItemContainerStyle="{StaticResource ModernListViewItem}"
+                                 MaxHeight="100" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Expander>
+
+                <!-- Initial Members -->
+                <Expander Header="Initial Members (Optional)" Style="{StaticResource ModernExpander}">
+                    <StackPanel Margin="0,8,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="MemberSearchBox" Grid.Column="0" Style="{StaticResource ModernTextBox}"
+                                     Tag="Search for users..."/>
+                            <Button x:Name="AddMemberButton" Grid.Column="1" Style="{StaticResource SecondaryButton}"
+                                    Content="Add" Margin="8,0,0,0" Padding="16,10"/>
+                        </Grid>
+                        <ListBox x:Name="MembersListBox" Style="{StaticResource ModernListView}"
+                                 ItemContainerStyle="{StaticResource ModernListViewItem}"
+                                 MaxHeight="100" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Buttons -->
+        <Grid Grid.Row="2" Margin="0,24,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="CancelButton" Grid.Column="1" Style="{StaticResource SecondaryButton}"
+                    Content="Cancel" Margin="0,0,8,0" IsCancel="True"/>
+            <Button x:Name="CreateButton" Grid.Column="2" Style="{StaticResource PrimaryButton}"
+                    Content="Create Group" IsDefault="True"/>
+        </Grid>
+    </Grid>
+</Window>

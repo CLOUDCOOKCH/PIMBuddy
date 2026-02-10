@@ -1,0 +1,212 @@
+<Window x:Class="PIMBuddy.AssignmentDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Add Assignment"
+        Height="600" Width="550"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        MinHeight="500" MinWidth="450"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock x:Name="DialogTitle" Text="Add Assignment" Style="{StaticResource SubheaderText}"/>
+            <TextBlock x:Name="DialogSubtitle" Text="Add eligible or active assignments to this group"
+                       Style="{StaticResource CaptionText}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Tabs for Single/Bulk -->
+        <TabControl Grid.Row="1" Style="{StaticResource ModernTabControl}">
+            <!-- Single Assignment Tab -->
+            <TabItem Header="Single Assignment" Style="{StaticResource ModernTabItem}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,16,0,0">
+                    <StackPanel>
+                        <!-- Assignment Type -->
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Assignment Type" Style="{StaticResource BodyText}" Margin="0,0,0,8"/>
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton x:Name="EligibleAssignment" Content="Eligible" IsChecked="True"
+                                             GroupName="AssignmentType" Margin="0,0,24,0"/>
+                                <RadioButton x:Name="ActiveAssignment" Content="Active" GroupName="AssignmentType"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Access Type -->
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Access Type" Style="{StaticResource BodyText}" Margin="0,0,0,8"/>
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton x:Name="MemberAccessType" Content="Member" IsChecked="True"
+                                             GroupName="AccessType" Margin="0,0,24,0"/>
+                                <RadioButton x:Name="OwnerAccessType" Content="Owner" GroupName="AccessType"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Separator Style="{StaticResource ModernSeparator}" Margin="0,8,0,16"/>
+
+                        <!-- User Search -->
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Select User or Group" Style="{StaticResource BodyText}" Margin="0,0,0,8"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="UserSearchBox" Grid.Column="0" Style="{StaticResource ModernTextBox}"
+                                         Tag="Search by name or email..."/>
+                                <Button x:Name="SearchButton" Grid.Column="1" Style="{StaticResource SecondaryButton}"
+                                        Content="Search" Margin="8,0,0,0" Padding="16,10"/>
+                            </Grid>
+
+                            <ListBox x:Name="SearchResultsList" Style="{StaticResource ModernListView}"
+                                     ItemContainerStyle="{StaticResource ModernListViewItem}"
+                                     MaxHeight="150" Margin="0,8,0,0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE77B;" FontFamily="{StaticResource IconFont}"
+                                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding DisplayName}" Style="{StaticResource BodyText}"/>
+                                                <TextBlock Text="{Binding UserPrincipalName}" Style="{StaticResource CaptionText}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <TextBlock x:Name="SelectedUserText" Text="" Style="{StaticResource BodyText}"
+                                       Foreground="{DynamicResource PrimaryBrush}" Margin="0,8,0,0"/>
+                        </StackPanel>
+
+                        <Separator Style="{StaticResource ModernSeparator}" Margin="0,8,0,16"/>
+
+                        <!-- Time-Bound Options -->
+                        <StackPanel Margin="0,0,0,16">
+                            <CheckBox x:Name="TimeBoundCheckbox" Style="{StaticResource ModernCheckBox}"
+                                      Content="Time-bound assignment" Margin="0,0,0,8"/>
+
+                            <StackPanel x:Name="TimeBoundOptions" Visibility="Collapsed" Margin="24,0,0,0">
+                                <StackPanel Margin="0,0,0,12">
+                                    <TextBlock Text="Start Date" Style="{StaticResource BodyText}" Margin="0,0,0,4"/>
+                                    <DatePicker x:Name="StartDatePicker" SelectedDate="{x:Static sys:DateTime.Today}"
+                                                xmlns:sys="clr-namespace:System;assembly=mscorlib"/>
+                                </StackPanel>
+
+                                <StackPanel>
+                                    <TextBlock Text="End Date" Style="{StaticResource BodyText}" Margin="0,0,0,4"/>
+                                    <DatePicker x:Name="EndDatePicker"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Justification -->
+                        <StackPanel>
+                            <TextBlock Text="Justification" Style="{StaticResource BodyText}" Margin="0,0,0,4"/>
+                            <TextBox x:Name="JustificationTextBox" Style="{StaticResource ModernTextBox}"
+                                     TextWrapping="Wrap" AcceptsReturn="True" Height="60"
+                                     Text="Added via PIMBuddy"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Bulk Import Tab -->
+            <TabItem Header="Bulk Import (CSV)" Style="{StaticResource ModernTabItem}">
+                <StackPanel Margin="0,16,0,0">
+                    <!-- Instructions -->
+                    <Border Background="{DynamicResource NavBackgroundBrush}" CornerRadius="4" Padding="12" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="CSV Format Requirements" Style="{StaticResource TitleText}" Margin="0,0,0,8"/>
+                            <TextBlock Style="{StaticResource CaptionText}" TextWrapping="Wrap">
+                                Your CSV file must contain the following columns:
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="12,8,0,0">
+                                - UserPrincipalName (required)
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="12,0,0,0">
+                                - AccessId (optional: member or owner)
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource BodyText}" Margin="12,0,0,0">
+                                - EndDateTime (optional: YYYY-MM-DD)
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Assignment Type for Bulk -->
+                    <StackPanel Margin="0,0,0,16">
+                        <TextBlock Text="Assignment Type for All" Style="{StaticResource BodyText}" Margin="0,0,0,8"/>
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="BulkEligibleAssignment" Content="Eligible" IsChecked="True"
+                                         GroupName="BulkAssignmentType" Margin="0,0,24,0"/>
+                            <RadioButton x:Name="BulkActiveAssignment" Content="Active" GroupName="BulkAssignmentType"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- File Selection -->
+                    <StackPanel Margin="0,0,0,16">
+                        <TextBlock Text="Select CSV File" Style="{StaticResource BodyText}" Margin="0,0,0,8"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="CsvFilePathTextBox" Grid.Column="0" Style="{StaticResource ModernTextBox}"
+                                     IsReadOnly="True" Tag="No file selected"/>
+                            <Button x:Name="BrowseCsvButton" Grid.Column="1" Style="{StaticResource SecondaryButton}"
+                                    Content="Browse..." Margin="8,0,0,0" Padding="16,10"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Preview -->
+                    <StackPanel Margin="0,0,0,16">
+                        <TextBlock Text="Preview" Style="{StaticResource BodyText}" Margin="0,0,0,8"/>
+                        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4">
+                            <DataGrid x:Name="CsvPreviewGrid" Style="{StaticResource ModernDataGrid}"
+                                      MaxHeight="200" AutoGenerateColumns="True" IsReadOnly="True"/>
+                        </Border>
+                        <TextBlock x:Name="PreviewCountText" Text="" Style="{StaticResource CaptionText}" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- Download Template -->
+                    <Button x:Name="DownloadTemplateButton" Style="{StaticResource SecondaryButton}"
+                            HorizontalAlignment="Left" Padding="16,10">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE896;" FontFamily="{StaticResource IconFont}"
+                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Download CSV Template"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+
+        <!-- Buttons -->
+        <Grid Grid.Row="2" Margin="0,24,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="CancelButton" Grid.Column="1" Style="{StaticResource SecondaryButton}"
+                    Content="Cancel" Margin="0,0,8,0" IsCancel="True"/>
+            <Button x:Name="AddButton" Grid.Column="2" Style="{StaticResource PrimaryButton}"
+                    Content="Add Assignment" IsDefault="True"/>
+        </Grid>
+    </Grid>
+</Window>

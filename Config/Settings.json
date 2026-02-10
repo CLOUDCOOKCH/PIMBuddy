@@ -1,0 +1,10 @@
+{
+  "ShowBestPracticeWarnings": true,
+  "DefaultActivationDuration": 4,
+  "LastTenantId": "",
+  "ExportPath": "",
+  "VerboseLogging": false,
+  "Theme": "Light",
+  "CloudEnvironment": "Commercial",
+  "AutoConnect": false
+}

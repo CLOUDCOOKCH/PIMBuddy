@@ -1,0 +1,364 @@
+{
+  "version": "1.0",
+  "templates": [
+    {
+      "id": "secure-admin",
+      "name": "Secure Admin Access",
+      "description": "Microsoft recommended settings for administrative roles with tiered security based on privilege level.",
+      "icon": "\uE72E",
+      "tiers": [
+        {
+          "name": "High-Privilege",
+          "description": "Global Admin, Privileged Role Admin, Security Admin",
+          "roles": [
+            "Global Administrator",
+            "Privileged Role Administrator",
+            "Privileged Authentication Administrator",
+            "Security Administrator"
+          ],
+          "settings": {
+            "activation": {
+              "maximumDurationHours": 2,
+              "requireMfa": true,
+              "requireApproval": true,
+              "requireJustification": true,
+              "requireTicketInfo": false
+            },
+            "eligibleAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 90
+            },
+            "activeAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 7,
+              "requireMfa": true,
+              "requireJustification": true
+            },
+            "notification": {
+              "notifyAssignee": true,
+              "notifyApprovers": true
+            }
+          }
+        },
+        {
+          "name": "Medium-Privilege",
+          "description": "User Admin, Groups Admin, Exchange Admin",
+          "roles": [
+            "User Administrator",
+            "Groups Administrator",
+            "Exchange Administrator",
+            "SharePoint Administrator",
+            "Teams Administrator",
+            "Intune Administrator"
+          ],
+          "settings": {
+            "activation": {
+              "maximumDurationHours": 4,
+              "requireMfa": true,
+              "requireApproval": true,
+              "requireJustification": true,
+              "requireTicketInfo": false
+            },
+            "eligibleAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 180
+            },
+            "activeAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 30,
+              "requireMfa": true,
+              "requireJustification": true
+            },
+            "notification": {
+              "notifyAssignee": true,
+              "notifyApprovers": true
+            }
+          }
+        },
+        {
+          "name": "Low-Privilege",
+          "description": "Helpdesk Admin, Reports Reader, Message Center Reader",
+          "roles": [
+            "Helpdesk Administrator",
+            "Reports Reader",
+            "Message Center Reader",
+            "Directory Readers",
+            "Guest Inviter"
+          ],
+          "settings": {
+            "activation": {
+              "maximumDurationHours": 8,
+              "requireMfa": true,
+              "requireApproval": false,
+              "requireJustification": true,
+              "requireTicketInfo": false
+            },
+            "eligibleAssignment": {
+              "allowPermanent": true,
+              "maximumDurationDays": 365
+            },
+            "activeAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 90,
+              "requireMfa": false,
+              "requireJustification": true
+            },
+            "notification": {
+              "notifyAssignee": true,
+              "notifyApprovers": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "zero-trust",
+      "name": "Zero Trust Security",
+      "description": "Maximum security posture with JIT for all roles, no permanent assignments, and conditional access policies required.",
+      "icon": "\uE72E",
+      "tiers": [
+        {
+          "name": "All Roles",
+          "description": "Apply to all privileged roles",
+          "roles": [],
+          "applyToAllRoles": true,
+          "settings": {
+            "activation": {
+              "maximumDurationHours": 1,
+              "requireMfa": true,
+              "requireApproval": true,
+              "requireJustification": true,
+              "requireTicketInfo": true
+            },
+            "eligibleAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 30
+            },
+            "activeAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 1,
+              "requireMfa": true,
+              "requireJustification": true
+            },
+            "notification": {
+              "notifyAssignee": true,
+              "notifyApprovers": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "contractor",
+      "name": "Contractor/External Access",
+      "description": "Restricted settings for external users with short durations and mandatory approvals from internal sponsors.",
+      "icon": "\uE716",
+      "tiers": [
+        {
+          "name": "External Users",
+          "description": "Settings for B2B guest and contractor accounts",
+          "roles": [],
+          "applyToExternalUsers": true,
+          "settings": {
+            "activation": {
+              "maximumDurationHours": 2,
+              "requireMfa": true,
+              "requireApproval": true,
+              "requireJustification": true,
+              "requireTicketInfo": true
+            },
+            "eligibleAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 30
+            },
+            "activeAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 1,
+              "requireMfa": true,
+              "requireJustification": true
+            },
+            "notification": {
+              "notifyAssignee": true,
+              "notifyApprovers": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "break-glass",
+      "name": "Break Glass Accounts",
+      "description": "Emergency access configuration with permanent active assignments and strong monitoring. Use sparingly for emergency scenarios only.",
+      "icon": "\uE7BA",
+      "warning": "Break glass accounts should be excluded from Conditional Access and monitored closely.",
+      "tiers": [
+        {
+          "name": "Emergency Access",
+          "description": "Permanent assignments for emergency scenarios",
+          "roles": [
+            "Global Administrator"
+          ],
+          "settings": {
+            "activation": {
+              "maximumDurationHours": 24,
+              "requireMfa": false,
+              "requireApproval": false,
+              "requireJustification": true,
+              "requireTicketInfo": false
+            },
+            "eligibleAssignment": {
+              "allowPermanent": true,
+              "maximumDurationDays": null
+            },
+            "activeAssignment": {
+              "allowPermanent": true,
+              "maximumDurationDays": null,
+              "requireMfa": false,
+              "requireJustification": false
+            },
+            "notification": {
+              "notifyAssignee": true,
+              "notifyApprovers": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "devops",
+      "name": "Developer/DevOps Access",
+      "description": "Flexible settings for development and operations roles with project-based durations and automated approvals.",
+      "icon": "\uE943",
+      "tiers": [
+        {
+          "name": "Non-Production Roles",
+          "description": "Development and testing environments",
+          "roles": [
+            "Application Administrator",
+            "Cloud Application Administrator",
+            "Application Developer"
+          ],
+          "settings": {
+            "activation": {
+              "maximumDurationHours": 8,
+              "requireMfa": true,
+              "requireApproval": false,
+              "requireJustification": true,
+              "requireTicketInfo": false
+            },
+            "eligibleAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 180
+            },
+            "activeAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 30,
+              "requireMfa": true,
+              "requireJustification": true
+            },
+            "notification": {
+              "notifyAssignee": true,
+              "notifyApprovers": false
+            }
+          }
+        },
+        {
+          "name": "Production Support",
+          "description": "Production environment access with stricter controls",
+          "roles": [],
+          "settings": {
+            "activation": {
+              "maximumDurationHours": 4,
+              "requireMfa": true,
+              "requireApproval": true,
+              "requireJustification": true,
+              "requireTicketInfo": true
+            },
+            "eligibleAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 90
+            },
+            "activeAssignment": {
+              "allowPermanent": false,
+              "maximumDurationDays": 7,
+              "requireMfa": true,
+              "requireJustification": true
+            },
+            "notification": {
+              "notifyAssignee": true,
+              "notifyApprovers": true
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "bestPractices": [
+    {
+      "id": "limit-global-admins",
+      "title": "Limit Global Administrators",
+      "description": "Microsoft recommends having no more than 5 Global Administrators.",
+      "severity": "high",
+      "threshold": 5,
+      "metric": "globalAdminCount"
+    },
+    {
+      "id": "no-permanent-active",
+      "title": "Avoid Permanent Active Assignments",
+      "description": "High-privilege roles should not have permanent active assignments.",
+      "severity": "high",
+      "applies_to": ["Global Administrator", "Privileged Role Administrator", "Security Administrator"]
+    },
+    {
+      "id": "require-mfa",
+      "title": "Require MFA on Activation",
+      "description": "All roles should require MFA when activating.",
+      "severity": "medium"
+    },
+    {
+      "id": "use-pim-groups",
+      "title": "Use PIM Groups",
+      "description": "Prefer assigning roles to PIM groups rather than individual users.",
+      "severity": "low"
+    },
+    {
+      "id": "enable-access-reviews",
+      "title": "Enable Access Reviews",
+      "description": "Regularly review privileged access assignments.",
+      "severity": "medium"
+    },
+    {
+      "id": "short-activation",
+      "title": "Use Short Activation Durations",
+      "description": "High-privilege roles should have activation durations of 4 hours or less.",
+      "severity": "medium",
+      "threshold_hours": 4,
+      "applies_to": ["Global Administrator", "Privileged Role Administrator", "Security Administrator"]
+    },
+    {
+      "id": "cloud-only-accounts",
+      "title": "Use Cloud-Only Accounts",
+      "description": "Privileged roles should be assigned to cloud-only accounts, not synced on-premises accounts.",
+      "severity": "high"
+    },
+    {
+      "id": "require-justification",
+      "title": "Require Justification",
+      "description": "All role activations should require a business justification.",
+      "severity": "low"
+    },
+    {
+      "id": "approval-for-critical",
+      "title": "Require Approval for Critical Roles",
+      "description": "Global Admin and Security Admin activations should require approval.",
+      "severity": "high",
+      "applies_to": ["Global Administrator", "Privileged Role Administrator", "Security Administrator"]
+    },
+    {
+      "id": "external-user-policies",
+      "title": "Strict External User Policies",
+      "description": "B2B guest accounts should have stricter PIM policies.",
+      "severity": "medium"
+    }
+  ]
+}

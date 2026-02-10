@@ -1,0 +1,38 @@
+[2026-02-04 13:02:45] [Info] PIMBuddy session started
+[2026-02-04 13:02:45] [Info] PIMBuddy starting...
+[2026-02-04 13:02:45] [Debug] Settings loaded successfully
+[2026-02-04 13:02:45] [Debug] Settings loaded
+[2026-02-04 13:02:45] [Debug] Initializing main window...
+[2026-02-04 13:02:45] [Debug] Settings saved successfully
+[2026-02-04 13:02:45] [Debug] Theme changed to: Light
+[2026-02-04 13:02:45] [Debug] Templates UI loaded successfully
+[2026-02-04 13:02:45] [Debug] Keyboard shortcuts initialized
+[2026-02-04 13:02:45] [Success] Main window initialized
+[2026-02-04 13:02:49] [Info] Initiating connection to Commercial environment
+[2026-02-04 13:02:49] [Debug] Disconnecting existing Graph session
+[2026-02-04 13:02:49] [Info] Opening browser for authentication...
+[2026-02-04 13:02:53] [Success] Successfully connected to padrunli
+[2026-02-04 13:02:53] [Success] Toast: [Success] Connected to padrunli
+[2026-02-04 13:02:53] [Debug] Refreshing dashboard data...
+[2026-02-04 13:02:53] [Debug] Fetching PIM groups...
+[2026-02-04 13:02:54] [Info] Found 7 PIM groups
+[2026-02-04 13:03:06] [Info] Dashboard: 7 groups, 0 eligible, 1 active
+[2026-02-04 13:03:08] [Debug] Fetching PIM groups...
+[2026-02-04 13:03:08] [Info] Found 7 PIM groups
+[2026-02-04 13:03:08] [Debug] Fetching PIM policy for group: b5932e2e-4eed-46a2-9dd9-303ebf06bdd1 (member)
+[2026-02-04 13:03:09] [Debug] Fetching PIM policy for group: 526dc037-a152-4184-8cb3-9dc9db837723 (member)
+[2026-02-04 13:03:09] [Debug] Fetching PIM policy for group: 270e26b0-c4c5-4566-9776-9d644822971a (member)
+[2026-02-04 13:03:10] [Debug] Fetching PIM policy for group: e19886ba-81c8-4b06-91a4-b7ef871d88ab (member)
+[2026-02-04 13:03:11] [Debug] Fetching PIM policy for group: 8a910451-cfc0-4c4a-9733-e2456fc9dfab (member)
+[2026-02-04 13:03:12] [Debug] Fetching PIM policy for group: a2a85f22-233a-406e-b534-8957a5e88935 (member)
+[2026-02-04 13:03:12] [Debug] Fetching PIM policy for group: 6e08ac8c-650f-44a3-b4d1-585046ad41ac (member)
+[2026-02-04 13:03:13] [Debug] Dashboard data refreshed
+[2026-02-04 13:03:32] [Debug] Navigated to: PoliciesPage
+[2026-02-04 13:03:32] [Debug] Fetching Entra ID roles...
+[2026-02-04 13:03:32] [Info] Found 136 roles
+[2026-02-04 13:03:32] [Debug] Role cache refreshed with 136 roles
+[2026-02-04 13:03:32] [Debug] Loaded 136 Entra roles for policy config
+[2026-02-04 13:03:39] [Debug] Navigated to: DashboardPage
+[2026-02-04 13:03:47] [Error] Fatal error starting PIMBuddy
+  Exception: Exception calling "ShowDialog" with "0" argument(s): "The property 'Count' cannot be found on this object. Verify that the property exists."
+[2026-02-04 13:03:48] [Info] PIMBuddy shutting down

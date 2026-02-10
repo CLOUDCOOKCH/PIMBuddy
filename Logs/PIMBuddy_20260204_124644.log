@@ -1,0 +1,49 @@
+[2026-02-04 12:46:44] [Info] PIMBuddy session started
+[2026-02-04 12:46:44] [Info] PIMBuddy starting...
+[2026-02-04 12:46:44] [Debug] Settings loaded successfully
+[2026-02-04 12:46:44] [Debug] Settings loaded
+[2026-02-04 12:46:44] [Debug] Initializing main window...
+[2026-02-04 12:46:44] [Debug] Settings saved successfully
+[2026-02-04 12:46:44] [Debug] Theme changed to: Light
+[2026-02-04 12:46:44] [Debug] Templates UI loaded successfully
+[2026-02-04 12:46:44] [Success] Main window initialized
+[2026-02-04 12:46:46] [Info] Initiating connection to Commercial environment
+[2026-02-04 12:46:46] [Debug] Disconnecting existing Graph session
+[2026-02-04 12:46:46] [Info] Opening browser for authentication...
+[2026-02-04 12:46:50] [Success] Successfully connected to padrunli
+[2026-02-04 12:46:50] [Success] Toast: [Success] Connected to padrunli
+[2026-02-04 12:46:50] [Debug] Refreshing dashboard data...
+[2026-02-04 12:46:50] [Debug] Fetching PIM groups...
+[2026-02-04 12:46:51] [Info] Found 7 PIM groups
+[2026-02-04 12:47:04] [Info] Dashboard: 7 groups, 0 eligible, 1 active
+[2026-02-04 12:47:05] [Debug] Fetching PIM groups...
+[2026-02-04 12:47:05] [Info] Found 7 PIM groups
+[2026-02-04 12:47:05] [Debug] Fetching PIM policy for group: b5932e2e-4eed-46a2-9dd9-303ebf06bdd1 (member)
+[2026-02-04 12:47:06] [Debug] Fetching PIM policy for group: 526dc037-a152-4184-8cb3-9dc9db837723 (member)
+[2026-02-04 12:47:06] [Debug] Fetching PIM policy for group: 270e26b0-c4c5-4566-9776-9d644822971a (member)
+[2026-02-04 12:47:07] [Debug] Fetching PIM policy for group: e19886ba-81c8-4b06-91a4-b7ef871d88ab (member)
+[2026-02-04 12:47:08] [Debug] Fetching PIM policy for group: 8a910451-cfc0-4c4a-9733-e2456fc9dfab (member)
+[2026-02-04 12:47:09] [Debug] Fetching PIM policy for group: a2a85f22-233a-406e-b534-8957a5e88935 (member)
+[2026-02-04 12:47:09] [Debug] Fetching PIM policy for group: 6e08ac8c-650f-44a3-b4d1-585046ad41ac (member)
+[2026-02-04 12:47:10] [Debug] Dashboard data refreshed
+[2026-02-04 12:47:20] [Debug] Navigated to: GroupsPage
+[2026-02-04 12:47:20] [Debug] Fetching PIM groups...
+[2026-02-04 12:47:20] [Info] Found 7 PIM groups
+[2026-02-04 12:47:20] [Debug] Group cache refreshed with 7 groups
+[2026-02-04 12:47:20] [Info] Loaded 7 PIM groups
+[2026-02-04 12:47:35] [Info] Adding active member to group 6e08ac8c-650f-44a3-b4d1-585046ad41ac for principal f41012f1-f57e-495d-9584-4b6b97eaaffa
+[2026-02-04 12:47:36] [Success] Active assignment created successfully
+[2026-02-04 12:47:36] [Success] Toast: [Success] Roman Padrun added as active member
+[2026-02-04 12:47:36] [Info] Loaded 7 PIM groups
+[2026-02-04 12:47:38] [Info] Loaded 7 PIM groups
+[2026-02-04 12:47:42] [Debug] Fetching group details: 6e08ac8c-650f-44a3-b4d1-585046ad41ac
+[2026-02-04 12:48:25] [Debug] Navigated to: PoliciesPage
+[2026-02-04 12:48:25] [Debug] Fetching Entra ID roles...
+[2026-02-04 12:48:25] [Info] Found 136 roles
+[2026-02-04 12:48:25] [Debug] Role cache refreshed with 136 roles
+[2026-02-04 12:48:25] [Debug] Loaded 136 Entra roles for policy config
+[2026-02-04 12:48:27] [Debug] Fetching Entra ID roles...
+[2026-02-04 12:48:27] [Info] Found 136 roles
+[2026-02-04 12:48:27] [Debug] Role cache refreshed with 136 roles
+[2026-02-04 12:48:27] [Debug] Loaded 136 Entra roles for policy config
+[2026-02-04 12:48:28] [Info] PIMBuddy shutting down

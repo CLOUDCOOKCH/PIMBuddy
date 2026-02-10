@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIMBuddy - Privileged Identity Management</title>
+    <!-- Distinctive Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&family=Orbitron:wght@900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header" role="banner">
+            <div class="header-left">
+                <i class="fas fa-shield-alt header-icon" aria-hidden="true"></i>
+                <h1 class="header-title">PIMBuddy</h1>
+                <span class="header-subtitle" aria-label="Application subtitle">Privileged Identity Management</span>
+            </div>
+            <div class="header-right">
+                <button id="theme-toggle" class="icon-btn" title="Toggle Theme" aria-label="Toggle between light and dark theme">
+                    <i class="fas fa-moon" aria-hidden="true"></i>
+                </button>
+                <button id="help-btn" class="icon-btn" title="Help" aria-label="Open help documentation">
+                    <i class="fas fa-question-circle" aria-hidden="true"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Navigation Sidebar -->
+            <nav class="sidebar" id="navigation" role="navigation" aria-label="Main navigation">
+                <div class="sidebar-content">
+                    <!-- Connect Button -->
+                    <div class="connect-section">
+                        <button id="connect-btn" class="btn btn-primary btn-block" aria-label="Connect to Azure AD">
+                            <i class="fas fa-plug" aria-hidden="true"></i>
+                            <span id="connect-text">Connect</span>
+                        </button>
+                    </div>
+
+                    <!-- Navigation Items -->
+                    <ul class="nav-list" role="menu" aria-label="Application pages">
+                        <li class="nav-item active" data-page="dashboard" role="menuitem" tabindex="0">
+                            <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                            <span>Dashboard</span>
+                        </li>
+                        <li class="nav-item" data-page="groups" role="menuitem" tabindex="0">
+                            <i class="fas fa-users" aria-hidden="true"></i>
+                            <span>PIM Groups</span>
+                        </li>
+                        <li class="nav-item" data-page="policies">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Policies</span>
+                        </li>
+                        <li class="nav-item" data-page="roles">
+                            <i class="fas fa-user-shield"></i>
+                            <span>Entra Roles</span>
+                        </li>
+                        <li class="nav-divider"></li>
+                        <li class="nav-item" data-page="activations" role="menuitem" tabindex="0">
+                            <i class="fas fa-user-clock" aria-hidden="true"></i>
+                            <span>My Activations</span>
+                        </li>
+                        <li class="nav-item" data-page="pim-activity" role="menuitem" tabindex="0">
+                            <i class="fas fa-history" aria-hidden="true"></i>
+                            <span>PIM Activity</span>
+                        </li>
+                        <li class="nav-item" data-page="pending-approvals">
+                            <i class="fas fa-clock"></i>
+                            <span>Approvals</span>
+                        </li>
+                        <li class="nav-item" data-page="expiring-assignments">
+                            <i class="fas fa-hourglass-end"></i>
+                            <span>Expiring</span>
+                        </li>
+                        <li class="nav-item" data-page="health-check">
+                            <i class="fas fa-heart-pulse"></i>
+                            <span>Health Check</span>
+                        </li>
+                        <li class="nav-item" data-page="role-coverage">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Coverage</span>
+                        </li>
+                        <li class="nav-divider"></li>
+                        <li class="nav-item" data-page="pimmaid">
+                            <i class="fas fa-project-diagram"></i>
+                            <span>PIMMaid</span>
+                        </li>
+                        <li class="nav-item" data-page="baseline">
+                            <i class="fas fa-rocket"></i>
+                            <span>Baseline Deploy</span>
+                        </li>
+                        <li class="nav-item" data-page="templates">
+                            <i class="fas fa-copy"></i>
+                            <span>Templates</span>
+                        </li>
+                        <li class="nav-item" data-page="export">
+                            <i class="fas fa-file-export"></i>
+                            <span>Import/Export</span>
+                        </li>
+                        <li class="nav-divider"></li>
+                        <li class="nav-item" data-page="settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Version -->
+                <div class="sidebar-footer">
+                    <span class="version">v1.0.0</span>
+                </div>
+            </nav>
+
+            <!-- Content Area -->
+            <main class="content" id="main-content" role="main" aria-label="Main content">
+                <!-- Loading Overlay -->
+                <div id="loading-overlay" class="loading-overlay hidden" role="status" aria-live="polite" aria-label="Loading content">
+                    <div class="loading-card">
+                        <div class="spinner" aria-hidden="true"></div>
+                        <p id="loading-text">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Toast Container -->
+                <div id="toast-container" class="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
+
+                <!-- Pages -->
+                <div id="page-dashboard" class="page active" role="region" aria-label="Dashboard page">
+                    <!-- Dashboard content loaded dynamically -->
+                </div>
+                <div id="page-groups" class="page">
+                    <!-- Groups content loaded dynamically -->
+                </div>
+                <div id="page-policies" class="page">
+                    <!-- Policies content loaded dynamically -->
+                </div>
+                <div id="page-roles" class="page">
+                    <!-- Roles content loaded dynamically -->
+                </div>
+                <div id="page-pimmaid" class="page">
+                    <!-- PIMMaid content loaded dynamically -->
+                </div>
+                <div id="page-baseline" class="page">
+                    <!-- Baseline content loaded dynamically -->
+                </div>
+                <div id="page-templates" class="page">
+                    <!-- Templates content loaded dynamically -->
+                </div>
+                <div id="page-export" class="page">
+                    <!-- Export content loaded dynamically -->
+                </div>
+                <div id="page-settings" class="page">
+                    <!-- Settings content loaded dynamically -->
+                </div>
+                <div id="page-activations" class="page">
+                    <!-- Activations content loaded dynamically -->
+                </div>
+                <div id="page-pim-activity" class="page">
+                    <!-- PIM Activity content loaded dynamically -->
+                </div>
+                <div id="page-pending-approvals" class="page">
+                    <!-- Pending Approvals content loaded dynamically -->
+                </div>
+                <div id="page-expiring-assignments" class="page">
+                    <!-- Expiring Assignments content loaded dynamically -->
+                </div>
+                <div id="page-health-check" class="page">
+                    <!-- Health Check content loaded dynamically -->
+                </div>
+                <div id="page-role-coverage" class="page">
+                    <!-- Role Coverage content loaded dynamically -->
+                </div>
+            </main>
+        </div>
+
+        <!-- Status Bar -->
+        <footer class="status-bar" role="contentinfo" aria-label="Application status">
+            <div class="status-left">
+                <span id="connection-indicator" class="status-indicator disconnected" role="status" aria-label="Connection status indicator"></span>
+                <span id="connection-text" aria-live="polite">Not Connected</span>
+            </div>
+            <div class="status-right">
+                <span id="status-info" aria-live="polite"></span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal-container" class="modal-container hidden">
+        <div class="modal-backdrop"></div>
+        <div id="modal-content" class="modal-content">
+            <!-- Modal content injected dynamically -->
+        </div>
+    </div>
+
+    <script type="module" src="/src/app.js"></script>
+</body>
+</html>
