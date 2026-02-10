@@ -7,12 +7,14 @@ export class PageRouter {
     constructor() {
         this.currentPage = 'dashboard';
         this.pages = new Map();
+        this.pageLoaders = new Map(); // For lazy loading
+        this.loadedPages = new Map(); // Cache loaded pages
         this.beforeNavigate = null;
         this.afterNavigate = null;
     }
 
     /**
-     * Register a page
+     * Register a page (immediate loading)
      * @param {string} name - Page name/route
      * @param {Object} pageInstance - Page instance with render() method
      */
@@ -21,6 +23,28 @@ export class PageRouter {
             throw new Error(`Page ${name} must have a render() method`);
         }
         this.pages.set(name, pageInstance);
+    }
+
+    /**
+     * Register a page loader (lazy loading)
+     * @param {string} name - Page name/route
+     * @param {Function} loader - Function that returns import() promise
+     */
+    registerPageLoader(name, loader) {
+        if (typeof loader !== 'function') {
+            throw new Error(`Page loader for ${name} must be a function`);
+        }
+        this.pageLoaders.set(name, loader);
+    }
+
+    /**
+     * Register multiple page loaders at once
+     * @param {Object} loaderMap - Map of page names to loader functions
+     */
+    registerPageLoaders(loaderMap) {
+        Object.entries(loaderMap).forEach(([name, loader]) => {
+            this.registerPageLoader(name, loader);
+        });
     }
 
     /**
@@ -34,14 +58,14 @@ export class PageRouter {
     }
 
     /**
-     * Navigate to a page
+     * Navigate to a page (supports both eager and lazy loaded pages)
      * @param {string} pageName - Page to navigate to
      * @param {Object} params - Optional parameters to pass to page
      * @returns {Promise<boolean>} Success status
      */
     async navigateTo(pageName, params = {}) {
-        // Check if page exists
-        if (!this.pages.has(pageName)) {
+        // Check if page exists (either registered or has loader)
+        if (!this.pages.has(pageName) && !this.pageLoaders.has(pageName)) {
             console.error(`[PageRouter] Page not found: ${pageName}`);
             return false;
         }
@@ -65,13 +89,26 @@ export class PageRouter {
         this.currentPage = pageName;
 
         try {
-            // Get page instance and render
-            const pageInstance = this.pages.get(pageName);
             const container = document.getElementById(`page-${pageName}`);
 
             if (!container) {
                 console.error(`[PageRouter] Container not found for page: ${pageName}`);
                 return false;
+            }
+
+            // Show loading state while loading page module
+            this.showLoadingState(container);
+
+            // Get or load page instance
+            let pageInstance = this.pages.get(pageName);
+
+            // If not registered, try lazy loading
+            if (!pageInstance && this.pageLoaders.has(pageName)) {
+                pageInstance = await this.loadPage(pageName);
+            }
+
+            if (!pageInstance) {
+                throw new Error(`Failed to load page: ${pageName}`);
             }
 
             // Render page
@@ -92,6 +129,60 @@ export class PageRouter {
 
             return false;
         }
+    }
+
+    /**
+     * Lazy load a page module
+     * @param {string} pageName - Page name
+     * @returns {Promise<Object>} Page instance
+     */
+    async loadPage(pageName) {
+        // Return cached if already loaded
+        if (this.loadedPages.has(pageName)) {
+            return this.loadedPages.get(pageName);
+        }
+
+        const loader = this.pageLoaders.get(pageName);
+        if (!loader) {
+            throw new Error(`No loader found for page: ${pageName}`);
+        }
+
+        console.log(`[PageRouter] Lazy loading page: ${pageName}`);
+
+        // Execute loader (dynamic import)
+        const module = await loader();
+
+        // Get page instance from module
+        let pageInstance;
+
+        if (module.default) {
+            pageInstance = module.default;
+        } else if (module.render) {
+            // If module exports render directly, wrap it
+            pageInstance = { render: module.render };
+        } else {
+            throw new Error(`Page module ${pageName} must export default or render function`);
+        }
+
+        // Cache the loaded page
+        this.loadedPages.set(pageName, pageInstance);
+
+        return pageInstance;
+    }
+
+    /**
+     * Show loading state in container
+     * @param {HTMLElement} container - Container element
+     */
+    showLoadingState(container) {
+        container.innerHTML = `
+            <div class="page-loading" style="display: flex; align-items: center; justify-content: center; min-height: 400px;">
+                <div style="text-align: center;">
+                    <div class="spinner" style="margin: 0 auto var(--space-md);"></div>
+                    <p style="color: var(--text-secondary);">Loading page...</p>
+                </div>
+            </div>
+        `;
     }
 
     /**
@@ -173,20 +264,36 @@ export class PageRouter {
     }
 
     /**
-     * Check if page exists
+     * Check if page exists (registered or has loader)
      * @param {string} pageName - Page name to check
      * @returns {boolean}
      */
     hasPage(pageName) {
-        return this.pages.has(pageName);
+        return this.pages.has(pageName) || this.pageLoaders.has(pageName);
     }
 
     /**
-     * Get registered pages
+     * Get registered pages (both eager and lazy)
      * @returns {Array<string>}
      */
     getRegisteredPages() {
-        return Array.from(this.pages.keys());
+        const eagerPages = Array.from(this.pages.keys());
+        const lazyPages = Array.from(this.pageLoaders.keys());
+        return [...new Set([...eagerPages, ...lazyPages])];
+    }
+
+    /**
+     * Clear loaded page cache
+     * @param {string} pageName - Optional: specific page to clear, or all if not specified
+     */
+    clearPageCache(pageName = null) {
+        if (pageName) {
+            this.loadedPages.delete(pageName);
+            console.log(`[PageRouter] Cleared cache for page: ${pageName}`);
+        } else {
+            this.loadedPages.clear();
+            console.log('[PageRouter] Cleared all page caches');
+        }
     }
 
     /**
