@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pwsh:*)",
+      "Bash(powershell.exe -Command \"\\(Get-Content ''c:\\\\Users\\\\RomanPadrun\\\\PIMBuddy\\\\GUI\\\\MainWindow.xaml'' -Raw\\) -match ''MergedDictionaries|Source=''\")",
+      "Bash(powershell.exe -Command \"Select-String -Path ''c:\\\\Users\\\\RomanPadrun\\\\PIMBuddy\\\\GUI\\\\MainWindow.xaml'' -Pattern ''Source='' -Context 1\")",
+      "Bash(powershell.exe -Command \"[byte[]]$bytes = [System.IO.File]::ReadAllBytes\\(''c:\\\\Users\\\\RomanPadrun\\\\PIMBuddy\\\\GUI\\\\MainWindow.xaml''\\); Write-Host ''First 3 bytes:'' \\($bytes[0..2] -join '' ''\\)\")",
+      "Bash(npm run dev:*)",
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(python:*)",
+      "Bash(ls:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(node --check:*)",
+      "Bash(echo:*)",
+      "Bash(for file in \"c:\\\\Users\\\\RomanPadrun\\\\PIMBuddy\\\\pimbuddy-web\\\\src\\\\pages\"/*.js)",
+      "Bash(done)",
+      "Bash(test:*)",
+      "Bash(npm run build:*)",
+      "Bash(powershell:*)"
+    ]
+  }
+}
