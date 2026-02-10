@@ -8,8 +8,8 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
-    // Optimize build for production
-    minify: 'terser',
+    // Optimize build for production (esbuild is faster and included with Vite)
+    minify: 'esbuild',
     target: 'es2020',
     rollupOptions: {
       output: {
