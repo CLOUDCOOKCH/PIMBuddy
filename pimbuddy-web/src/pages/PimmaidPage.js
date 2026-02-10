@@ -71,7 +71,7 @@ export class PimmaidPage extends BasePage {
                         </select>
                     </div>
 
-                    <button class="btn btn-primary btn-block" onclick="app.pages.pimmaid.generateDiagram()" ${!this.isConnected() ? 'disabled' : ''} aria-label="Generate Mermaid diagram">
+                    <button class="btn btn-primary btn-block" id="generate-diagram-btn" ${!this.isConnected() ? 'disabled' : ''} aria-label="Generate Mermaid diagram">
                         <i class="fas fa-magic"></i> Generate Diagram
                     </button>
 
@@ -82,13 +82,13 @@ export class PimmaidPage extends BasePage {
                     <div class="pimmaid-output-header">
                         <h3><i class="fas fa-code"></i> Mermaid Output</h3>
                         <div class="pimmaid-actions">
-                            <button class="btn btn-sm btn-secondary" onclick="app.pages.pimmaid.copyCode()" id="copy-mermaid-btn" disabled aria-label="Copy Mermaid code">
+                            <button class="btn btn-sm btn-secondary" id="copy-mermaid-btn" disabled aria-label="Copy Mermaid code">
                                 <i class="fas fa-copy"></i> Copy
                             </button>
-                            <button class="btn btn-sm btn-secondary" onclick="app.pages.pimmaid.downloadCode()" id="download-mermaid-btn" disabled aria-label="Download Mermaid code">
+                            <button class="btn btn-sm btn-secondary" id="download-mermaid-btn" disabled aria-label="Download Mermaid code">
                                 <i class="fas fa-download"></i> Download
                             </button>
-                            <button class="btn btn-sm btn-secondary" onclick="app.pages.pimmaid.openInMermaidLive()" id="live-mermaid-btn" disabled aria-label="Open in Mermaid Live Editor">
+                            <button class="btn btn-sm btn-secondary" id="live-mermaid-btn" disabled aria-label="Open in Mermaid Live Editor">
                                 <i class="fas fa-external-link-alt"></i> Open in Mermaid Live
                             </button>
                         </div>
@@ -119,6 +119,23 @@ export class PimmaidPage extends BasePage {
                 option.classList.add('selected');
                 option.querySelector('input').checked = true;
             });
+        });
+
+        // Add event listeners for buttons
+        document.getElementById('generate-diagram-btn')?.addEventListener('click', () => {
+            this.generateDiagram();
+        });
+
+        document.getElementById('copy-mermaid-btn')?.addEventListener('click', () => {
+            this.copyCode();
+        });
+
+        document.getElementById('download-mermaid-btn')?.addEventListener('click', () => {
+            this.downloadCode();
+        });
+
+        document.getElementById('live-mermaid-btn')?.addEventListener('click', () => {
+            this.openInMermaidLive();
         });
     }
 

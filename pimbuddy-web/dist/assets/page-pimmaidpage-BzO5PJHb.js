@@ -1,4 +1,4 @@
-import{B as y}from"./core-rjX7nIO3.js";import{p as n,g as o}from"./services-DF6cB9Vv.js";class M extends y{constructor(a){super(a)}async render(a,d={}){const t=n.getDiagramTypes();a.innerHTML=`
+import{B as y}from"./core-rjX7nIO3.js";import{p as o,g as n}from"./services-DF6cB9Vv.js";class L extends y{constructor(a){super(a)}async render(a,d={}){const t=o.getDiagramTypes();a.innerHTML=`
             <div class="page-header-row">
                 <h1 class="page-header">
                     <i class="fas fa-project-diagram"></i> PIMMaid
@@ -49,7 +49,7 @@ import{B as y}from"./core-rjX7nIO3.js";import{p as n,g as o}from"./services-DF6c
                         </select>
                     </div>
 
-                    <button class="btn btn-primary btn-block" onclick="app.pages.pimmaid.generateDiagram()" ${this.isConnected()?"":"disabled"} aria-label="Generate Mermaid diagram">
+                    <button class="btn btn-primary btn-block" id="generate-diagram-btn" ${this.isConnected()?"":"disabled"} aria-label="Generate Mermaid diagram">
                         <i class="fas fa-magic"></i> Generate Diagram
                     </button>
 
@@ -60,13 +60,13 @@ import{B as y}from"./core-rjX7nIO3.js";import{p as n,g as o}from"./services-DF6c
                     <div class="pimmaid-output-header">
                         <h3><i class="fas fa-code"></i> Mermaid Output</h3>
                         <div class="pimmaid-actions">
-                            <button class="btn btn-sm btn-secondary" onclick="app.pages.pimmaid.copyCode()" id="copy-mermaid-btn" disabled aria-label="Copy Mermaid code">
+                            <button class="btn btn-sm btn-secondary" id="copy-mermaid-btn" disabled aria-label="Copy Mermaid code">
                                 <i class="fas fa-copy"></i> Copy
                             </button>
-                            <button class="btn btn-sm btn-secondary" onclick="app.pages.pimmaid.downloadCode()" id="download-mermaid-btn" disabled aria-label="Download Mermaid code">
+                            <button class="btn btn-sm btn-secondary" id="download-mermaid-btn" disabled aria-label="Download Mermaid code">
                                 <i class="fas fa-download"></i> Download
                             </button>
-                            <button class="btn btn-sm btn-secondary" onclick="app.pages.pimmaid.openInMermaidLive()" id="live-mermaid-btn" disabled aria-label="Open in Mermaid Live Editor">
+                            <button class="btn btn-sm btn-secondary" id="live-mermaid-btn" disabled aria-label="Open in Mermaid Live Editor">
                                 <i class="fas fa-external-link-alt"></i> Open in Mermaid Live
                             </button>
                         </div>
@@ -88,7 +88,7 @@ import{B as y}from"./core-rjX7nIO3.js";import{p as n,g as o}from"./services-DF6c
                     </div>
                 </div>
             </div>
-        `,document.querySelectorAll(".diagram-type-option").forEach(e=>{e.addEventListener("click",()=>{document.querySelectorAll(".diagram-type-option").forEach(s=>s.classList.remove("selected")),e.classList.add("selected"),e.querySelector("input").checked=!0})})}async generateDiagram(){const a=document.querySelector('input[name="diagram-type"]:checked')?.value||"full-hierarchy",d=document.getElementById("pimmaid-eligible").checked,t=document.getElementById("pimmaid-active").checked,e=document.getElementById("pimmaid-direction").value;this.showLoading("Fetching PIM data...");try{const[s,l]=await Promise.all([o.getPIMGroups(),o.getRoleDefinitions()]);if(!s.success||!l.success)throw new Error("Failed to fetch PIM data");const c=s.groups,v=l.roles;this.showLoading("Fetching assignments...");let r={},m={};["user-group","full-hierarchy"].includes(a)&&(r=(await o.getAllGroupAssignments(c)).assignments||{}),["group-role","full-hierarchy","role-assignments"].includes(a)&&(m=(await o.getAllRoleAssignments()).assignments||{}),this.hideLoading();const p={groups:c,roles:v,groupAssignments:r,roleAssignments:m},h={showEligible:d,showActive:t,direction:e},g=n.generateDiagram(a,p,h),i=n.getStats(p);document.getElementById("pimmaid-code").textContent=g,document.getElementById("copy-mermaid-btn").disabled=!1,document.getElementById("download-mermaid-btn").disabled=!1,document.getElementById("live-mermaid-btn").disabled=!1;const u=document.getElementById("pimmaid-stats");u.innerHTML=`
+        `,document.querySelectorAll(".diagram-type-option").forEach(e=>{e.addEventListener("click",()=>{document.querySelectorAll(".diagram-type-option").forEach(s=>s.classList.remove("selected")),e.classList.add("selected"),e.querySelector("input").checked=!0})}),document.getElementById("generate-diagram-btn")?.addEventListener("click",()=>{this.generateDiagram()}),document.getElementById("copy-mermaid-btn")?.addEventListener("click",()=>{this.copyCode()}),document.getElementById("download-mermaid-btn")?.addEventListener("click",()=>{this.downloadCode()}),document.getElementById("live-mermaid-btn")?.addEventListener("click",()=>{this.openInMermaidLive()})}async generateDiagram(){const a=document.querySelector('input[name="diagram-type"]:checked')?.value||"full-hierarchy",d=document.getElementById("pimmaid-eligible").checked,t=document.getElementById("pimmaid-active").checked,e=document.getElementById("pimmaid-direction").value;this.showLoading("Fetching PIM data...");try{const[s,l]=await Promise.all([n.getPIMGroups(),n.getRoleDefinitions()]);if(!s.success||!l.success)throw new Error("Failed to fetch PIM data");const c=s.groups,v=l.roles;this.showLoading("Fetching assignments...");let r={},m={};["user-group","full-hierarchy"].includes(a)&&(r=(await n.getAllGroupAssignments(c)).assignments||{}),["group-role","full-hierarchy","role-assignments"].includes(a)&&(m=(await n.getAllRoleAssignments()).assignments||{}),this.hideLoading();const p={groups:c,roles:v,groupAssignments:r,roleAssignments:m},b={showEligible:d,showActive:t,direction:e},g=o.generateDiagram(a,p,b),i=o.getStats(p);document.getElementById("pimmaid-code").textContent=g,document.getElementById("copy-mermaid-btn").disabled=!1,document.getElementById("download-mermaid-btn").disabled=!1,document.getElementById("live-mermaid-btn").disabled=!1;const u=document.getElementById("pimmaid-stats");u.innerHTML=`
                 <h4><i class="fas fa-chart-bar"></i> Statistics</h4>
                 <div class="stats-grid">
                     <div class="stat-item">
@@ -125,5 +125,5 @@ import{B as y}from"./core-rjX7nIO3.js";import{p as n,g as o}from"./services-DF6c
                     <p class="code-lines">${g.split(`
 `).length} lines generated</p>
                 </div>
-            `,this.showToast("Diagram generated successfully","success")}catch(s){this.hideLoading(),this.showToast("Failed to generate diagram: "+s.message,"error")}}copyCode(){const a=document.getElementById("pimmaid-code").textContent;navigator.clipboard.writeText(a).then(()=>{this.showToast("Mermaid code copied to clipboard","success")}).catch(()=>{this.showToast("Failed to copy","error")})}downloadCode(){const a=document.getElementById("pimmaid-code").textContent,d=new Blob([a],{type:"text/plain"}),t=URL.createObjectURL(d),e=document.createElement("a");e.href=t,e.download=`pimmaid-diagram-${new Date().toISOString().split("T")[0]}.mmd`,document.body.appendChild(e),e.click(),document.body.removeChild(e),URL.revokeObjectURL(t),this.showToast("Diagram downloaded","success")}openInMermaidLive(){const d={code:document.getElementById("pimmaid-code").textContent,mermaid:{theme:"dark"}},t=btoa(JSON.stringify(d));window.open(`https://mermaid.live/edit#base64:${t}`,"_blank")}async refreshPage(){await this.app.router.refreshCurrentPage()}}export{M as P};
-//# sourceMappingURL=page-pimmaidpage-GmsR1KOG.js.map
+            `,this.showToast("Diagram generated successfully","success")}catch(s){this.hideLoading(),this.showToast("Failed to generate diagram: "+s.message,"error")}}copyCode(){const a=document.getElementById("pimmaid-code").textContent;navigator.clipboard.writeText(a).then(()=>{this.showToast("Mermaid code copied to clipboard","success")}).catch(()=>{this.showToast("Failed to copy","error")})}downloadCode(){const a=document.getElementById("pimmaid-code").textContent,d=new Blob([a],{type:"text/plain"}),t=URL.createObjectURL(d),e=document.createElement("a");e.href=t,e.download=`pimmaid-diagram-${new Date().toISOString().split("T")[0]}.mmd`,document.body.appendChild(e),e.click(),document.body.removeChild(e),URL.revokeObjectURL(t),this.showToast("Diagram downloaded","success")}openInMermaidLive(){const d={code:document.getElementById("pimmaid-code").textContent,mermaid:{theme:"dark"}},t=btoa(JSON.stringify(d));window.open(`https://mermaid.live/edit#base64:${t}`,"_blank")}async refreshPage(){await this.app.router.refreshCurrentPage()}}export{L as P};
+//# sourceMappingURL=page-pimmaidpage-BzO5PJHb.js.map
