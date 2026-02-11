@@ -3,8 +3,8 @@
  * Provides offline caching and improved performance
  */
 
-const CACHE_NAME = 'pimbuddy-v1.0.0';
-const RUNTIME_CACHE = 'pimbuddy-runtime';
+const CACHE_NAME = 'pimbuddy-v1.0.1';
+const RUNTIME_CACHE = 'pimbuddy-runtime-v1.0.1';
 
 // Assets to cache on install
 const PRECACHE_ASSETS = [
