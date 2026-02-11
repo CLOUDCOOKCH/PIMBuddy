@@ -35,8 +35,6 @@ jobs:
           npm ci
 
       - name: Build
-        env:
-          GITHUB_PAGES: true
         run: |
           cd pimbuddy-web
           npm run build
