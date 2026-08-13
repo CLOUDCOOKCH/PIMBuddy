@@ -2604,7 +2604,10 @@ select.input {
 .builder-fieldset { border: 0; border-top: 1px solid var(--border-default); margin: 1.5rem 0 0; padding: 1.5rem 0 0; }
 .builder-fieldset legend { padding-right: 1rem; font-size: 1.05rem; font-weight: 700; }
 .custom-role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .75rem; margin-top: 1rem; }
+.role-search-field { display: flex; align-items: center; gap: .65rem; max-width: 32rem; margin-top: 1rem; color: var(--text-secondary); }
+.role-search-field .input { width: 100%; }
 .custom-role-option, .safeguard-option { position: relative; }
+.custom-role-option[hidden] { display: none; }
 .custom-role-option input, .safeguard-option input {
     position: absolute;
     width: 1px;
