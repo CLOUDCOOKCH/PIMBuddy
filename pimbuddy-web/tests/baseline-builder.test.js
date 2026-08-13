@@ -34,6 +34,47 @@ test('custom baseline builder remains clickable before connecting', async () => 
     assert.equal(opened, true);
 });
 
+test('custom builder actions use bound listeners instead of the global app object', () => {
+    const handlers = {};
+    const controls = {
+        '#close-custom-baseline-builder': {
+            addEventListener(eventName, handler) { handlers[`close:${eventName}`] = handler; }
+        },
+        '#create-custom-baseline': {
+            addEventListener(eventName, handler) { handlers[`create:${eventName}`] = handler; }
+        }
+    };
+    const builder = {
+        hidden: true,
+        innerHTML: '',
+        querySelector(selector) { return controls[selector]; },
+        querySelectorAll() { return []; },
+        scrollIntoView() {}
+    };
+    const originalDocument = globalThis.document;
+    globalThis.document = { getElementById: () => builder };
+
+    try {
+        const page = new BaselinePage({ isConnected: false });
+        let closed = false;
+        let created = false;
+        page.closeCustomBuilder = () => { closed = true; };
+        page.createCustomBaseline = () => { created = true; };
+
+        page.openCustomBuilder();
+
+        assert.doesNotMatch(builder.innerHTML, /onclick=/);
+        assert.equal(typeof handlers['close:click'], 'function');
+        assert.equal(typeof handlers['create:click'], 'function');
+        handlers['close:click']();
+        handlers['create:click']();
+        assert.equal(closed, true);
+        assert.equal(created, true);
+    } finally {
+        globalThis.document = originalDocument;
+    }
+});
+
 test('custom baselines use the standard baseline validation and deployment shape', () => {
     baselineService.setCustomBaseline({
         name: 'Test Baseline',

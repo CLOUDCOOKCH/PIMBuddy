@@ -189,7 +189,7 @@ export class BaselinePage extends BasePage {
             <div class="card custom-builder-card">
                 <div class="custom-builder-heading">
                     <div><span class="builder-kicker">CUSTOM BASELINE BUILDER</span><h2>Choose what belongs in your baseline</h2></div>
-                    <button class="btn btn-secondary btn-sm" onclick="app.pages.baseline.closeCustomBuilder()"><i class="fas fa-xmark"></i> Close</button>
+                    <button class="btn btn-secondary btn-sm" id="close-custom-baseline-builder" type="button"><i class="fas fa-xmark"></i> Close</button>
                 </div>
                 <div class="builder-form-grid">
                     <label class="form-group"><span>Baseline name</span><input id="custom-baseline-name" class="input" value="My PIM Baseline" maxlength="80"></label>
@@ -213,9 +213,13 @@ export class BaselinePage extends BasePage {
                     </div>
                 </fieldset>
                 <div class="builder-footer"><div><strong id="custom-selection-count">0 roles selected</strong><p>Next, customize groups and review the complete deployment plan.</p></div>
-                    <button class="btn btn-primary btn-lg" onclick="app.pages.baseline.createCustomBaseline()">Continue to group setup <i class="fas fa-arrow-right"></i></button>
+                    <button class="btn btn-primary btn-lg" id="create-custom-baseline" type="button">Continue to group setup <i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>`;
+        builder.querySelector('#close-custom-baseline-builder')
+            ?.addEventListener('click', () => this.closeCustomBuilder());
+        builder.querySelector('#create-custom-baseline')
+            ?.addEventListener('click', () => this.createCustomBaseline());
         builder.querySelectorAll('.custom-role-option input').forEach(input => input.addEventListener('change', () => {
             const count = builder.querySelectorAll('.custom-role-option input:checked').length;
             document.getElementById('custom-selection-count').textContent = `${count} role${count === 1 ? '' : 's'} selected`;
@@ -228,7 +232,8 @@ export class BaselinePage extends BasePage {
     }
 
     closeCustomBuilder() {
-        document.getElementById('custom-baseline-builder').hidden = true;
+        const builder = document.getElementById('custom-baseline-builder');
+        if (builder) builder.hidden = true;
     }
 
     createCustomBaseline() {
