@@ -2604,12 +2604,23 @@ select.input {
 .builder-fieldset { border: 0; border-top: 1px solid var(--border-default); margin: 1.5rem 0 0; padding: 1.5rem 0 0; }
 .builder-fieldset legend { padding-right: 1rem; font-size: 1.05rem; font-weight: 700; }
 .custom-role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .75rem; margin-top: 1rem; }
-.custom-role-option input, .safeguard-option input { position: absolute; opacity: 0; pointer-events: none; }
+.custom-role-option, .safeguard-option { position: relative; }
+.custom-role-option input, .safeguard-option input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
+}
 .role-option-content, .safeguard-option > span { display: flex; border: 1px solid var(--border-default); border-radius: 10px; cursor: pointer; transition: .2s ease; }
 .role-option-content { min-height: 120px; padding: 1rem; flex-direction: column; gap: .45rem; }
 .role-option-content > i { color: var(--accent-primary); font-size: 1.3rem; }
 .role-option-content small { margin-top: auto; color: var(--text-secondary); }
 .custom-role-option input:checked + .role-option-content, .safeguard-option input:checked + span { border-color: var(--accent-primary); background: var(--accent-primary-dim); box-shadow: 0 0 0 2px var(--border-default); }
+.custom-role-option input:focus-visible + .role-option-content, .safeguard-option input:focus-visible + span { outline: 3px solid var(--accent-primary); outline-offset: 2px; }
 .safeguard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .75rem; margin-top: 1rem; }
 .safeguard-option > span { padding: 1rem; display: grid; grid-template-columns: auto 1fr; column-gap: .7rem; }
 .safeguard-option i { color: var(--accent-primary); grid-row: 1 / 3; }
