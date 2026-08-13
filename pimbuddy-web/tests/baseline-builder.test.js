@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { baselineService } from '../src/services/baselineService.js';
+import { graphService } from '../src/services/graphService.js';
 import { BaselinePage } from '../src/pages/BaselinePage.js';
 
 test('custom baseline builder remains clickable before connecting', async () => {
@@ -105,4 +106,102 @@ test('custom baselines use the standard baseline validation and deployment shape
     assert.equal(custom.name, 'Test Baseline');
     assert.equal(custom.tiers[0].groups.length, 1);
     assert.equal(custom.tiers[0].policy.maximumDurationHours, 4);
+});
+
+test('group detail toggles do not depend on a browser-global event', () => {
+    const attributes = {};
+    let focused = false;
+    const icon = { className: 'fas fa-chevron-down' };
+    const button = {
+        querySelector: () => icon,
+        setAttribute(name, value) { attributes[name] = value; }
+    };
+    const details = {
+        style: { display: 'none' },
+        querySelector: () => ({ focus() { focused = true; } })
+    };
+    const originalDocument = globalThis.document;
+    globalThis.document = { getElementById: () => details };
+
+    try {
+        const page = new BaselinePage({ isConnected: false });
+        page.toggleGroupDetails(0, 0, button);
+        assert.equal(details.style.display, 'block');
+        assert.equal(icon.className, 'fas fa-chevron-up');
+        assert.equal(attributes['aria-expanded'], 'true');
+        assert.equal(focused, true);
+
+        page.toggleGroupDetails(0, 0, button);
+        assert.equal(details.style.display, 'none');
+        assert.equal(attributes['aria-expanded'], 'false');
+    } finally {
+        globalThis.document = originalDocument;
+    }
+});
+
+test('connected custom builder merges all tenant roles into the catalog', async () => {
+    const originalGetRoleDefinitions = graphService.getRoleDefinitions;
+    graphService.getRoleDefinitions = async () => ({
+        success: true,
+        roles: [{
+            id: 'role-definition-id',
+            templateId: 'custom-role-template',
+            displayName: 'Authentication Administrator',
+            privilegeLevel: 'high'
+        }]
+    });
+
+    try {
+        const page = new BaselinePage({ isConnected: true });
+        await page.loadAvailableRoles();
+        const role = page.customRoleCatalog.find(item => item.id === 'custom-role-template');
+        assert.deepEqual(role, {
+            id: 'custom-role-template',
+            name: 'Authentication Administrator',
+            tier: 1,
+            icon: 'fa-user-shield'
+        });
+    } finally {
+        graphService.getRoleDefinitions = originalGetRoleDefinitions;
+    }
+});
+
+test('custom role search filters rendered role names and reports matches', () => {
+    const makeOption = textContent => {
+        const classes = new Set();
+        return {
+            textContent,
+            hidden: false,
+            classList: {
+                toggle(name, enabled) {
+                    if (enabled) classes.add(name);
+                    else classes.delete(name);
+                },
+                contains: name => classes.has(name)
+            }
+        };
+    };
+    const roles = [
+        makeOption('Authentication Administrator Tier 1'),
+        makeOption('Global Administrator Tier 0'),
+        makeOption('Éxchange Administrator Tier 1')
+    ];
+    const status = { textContent: '' };
+    const builder = {
+        querySelectorAll: selector => selector === '.custom-role-option' ? roles : [],
+        querySelector: selector => selector === '#custom-role-search-status' ? status : null
+    };
+    const page = new BaselinePage({ isConnected: false });
+
+    assert.equal(page.filterCustomRoles(builder, 'auth'), 1);
+    assert.deepEqual(roles.map(role => role.hidden), [false, true, true]);
+    assert.equal(roles[1].classList.contains('role-search-hidden'), true);
+    assert.equal(status.textContent, '1 of 3 roles match “auth”');
+
+    assert.equal(page.filterCustomRoles(builder, 'exchange'), 1, 'search should ignore accents');
+    assert.deepEqual(roles.map(role => role.hidden), [true, true, false]);
+
+    assert.equal(page.filterCustomRoles(builder, ''), 3);
+    assert.deepEqual(roles.map(role => role.hidden), [false, false, false]);
+    assert.equal(status.textContent, 'Showing all 3 roles');
 });
