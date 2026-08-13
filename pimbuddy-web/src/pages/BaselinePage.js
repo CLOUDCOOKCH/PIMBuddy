@@ -74,7 +74,7 @@ export class BaselinePage extends BasePage {
                                 <span class="stat-badge"><i class="fas fa-hand-pointer"></i> Guided builder</span>
                                 <span class="stat-badge"><i class="fas fa-eye"></i> Review first</span>
                             </div>
-                            <button class="btn btn-primary btn-block" onclick="app.pages.baseline.openCustomBuilder()" ${!this.isConnected() ? 'disabled' : ''}>
+                            <button class="btn btn-primary btn-block" id="open-custom-baseline-builder" type="button">
                                 <i class="fas fa-hammer"></i> Build Your Baseline
                             </button>
                         </div>
@@ -174,6 +174,12 @@ export class BaselinePage extends BasePage {
             groupUsers: {},
             groupCustomizations: {}
         };
+
+        // Building a configuration is entirely local, so keep the builder
+        // available before sign-in. Use a bound listener instead of relying on
+        // the global `app` object used by legacy inline handlers.
+        container.querySelector('#open-custom-baseline-builder')
+            ?.addEventListener('click', () => this.openCustomBuilder());
     }
 
     openCustomBuilder() {
