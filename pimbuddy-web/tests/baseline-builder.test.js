@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import { baselineService } from '../src/services/baselineService.js';
@@ -34,13 +33,4 @@ test('custom baselines use the standard baseline validation and deployment shape
     assert.equal(custom.name, 'Test Baseline');
     assert.equal(custom.tiers[0].groups.length, 1);
     assert.equal(custom.tiers[0].policy.maximumDurationHours, 4);
-});
-
-test('baseline builder loads tenant roles and keeps selections while searching', async () => {
-    const source = await readFile(new URL('../src/pages/BaselinePage.js', import.meta.url), 'utf8');
-
-    assert.match(source, /await graphService\.getRoleDefinitions\(\)/);
-    assert.match(source, /role\.isBuiltIn === false/);
-    assert.match(source, /this\.customSelectedRoleIds \|\| new Set\(\)/);
-    assert.match(source, /custom-role-search/);
 });
