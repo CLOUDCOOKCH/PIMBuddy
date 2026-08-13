@@ -308,6 +308,20 @@ class BaselineService {
     }
 
     /**
+     * Add or replace the session-scoped custom baseline used by the builder.
+     * Custom baselines deliberately use the same shape as built-in baselines so
+     * validation, review and deployment follow the exact same code path.
+     */
+    setCustomBaseline(baseline) {
+        this.baselineConfigurations['custom-baseline'] = {
+            ...baseline,
+            id: 'custom-baseline',
+            icon: 'fa-wand-magic-sparkles',
+            color: 'primary'
+        };
+    }
+
+    /**
      * Get all baseline configurations
      */
     getBaselineConfigurations() {
