@@ -144,6 +144,11 @@ export class AccessibilityManager {
 
         // Monitor focus and provide helpful feedback
         document.addEventListener('focus', (e) => {
+            // Focus events can be dispatched with non-Element targets (for
+            // example Document, Window, or assistive-technology proxies).
+            // Only Elements implement the selector API.
+            if (!e.target || typeof e.target.matches !== 'function') return;
+
             // Announce buttons on focus for screen readers
             if (e.target.matches('button:not([aria-label]):not([title])')) {
                 const text = e.target.textContent.trim();
