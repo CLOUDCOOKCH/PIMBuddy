@@ -2,6 +2,37 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { baselineService } from '../src/services/baselineService.js';
+import { BaselinePage } from '../src/pages/BaselinePage.js';
+
+test('custom baseline builder remains clickable before connecting', async () => {
+    let clickHandler;
+    const builderButton = {
+        addEventListener(eventName, handler) {
+            assert.equal(eventName, 'click');
+            clickHandler = handler;
+        }
+    };
+    const container = {
+        innerHTML: '',
+        querySelector(selector) {
+            assert.equal(selector, '#open-custom-baseline-builder');
+            return builderButton;
+        }
+    };
+    const page = new BaselinePage({ isConnected: false });
+    let opened = false;
+    page.openCustomBuilder = () => { opened = true; };
+
+    await page.render(container);
+
+    const buttonMarkup = container.innerHTML.match(/<button class="btn btn-primary btn-block" id="open-custom-baseline-builder"[^>]*>/)?.[0];
+    assert.ok(buttonMarkup, 'builder button should be rendered');
+    assert.doesNotMatch(buttonMarkup, /disabled/);
+    assert.equal(typeof clickHandler, 'function');
+
+    clickHandler();
+    assert.equal(opened, true);
+});
 
 test('custom baselines use the standard baseline validation and deployment shape', () => {
     baselineService.setCustomBaseline({
