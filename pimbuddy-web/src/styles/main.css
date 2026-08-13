@@ -2896,15 +2896,26 @@ select.input {
 
 .user-search-result {
     display: flex;
+    width: 100%;
     align-items: center;
     justify-content: space-between;
     padding: var(--space-sm) var(--space-md);
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
     cursor: pointer;
     transition: background 0.2s ease;
 }
 
 .user-search-result:hover {
     background: var(--bg-hover);
+}
+
+.user-search-result:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: -2px;
 }
 
 .user-search-result .user-info {

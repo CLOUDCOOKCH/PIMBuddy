@@ -5,12 +5,14 @@
 
 const CACHE_NAME = 'pimbuddy-v1.0.1';
 const RUNTIME_CACHE = 'pimbuddy-runtime-v1.0.1';
+const APP_BASE = new URL('./', self.location.href).pathname;
 
 // Assets to cache on install
 const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json'
+  APP_BASE,
+  `${APP_BASE}index.html`,
+  `${APP_BASE}manifest.json`,
+  `${APP_BASE}icons/app-icon.svg`
 ];
 
 // Install event - precache assets
@@ -79,7 +81,7 @@ self.addEventListener('fetch', (event) => {
           // Fallback to cache if offline
           return caches.match(request)
             .then((cachedResponse) => {
-              return cachedResponse || caches.match('/index.html');
+              return cachedResponse || caches.match(`${APP_BASE}index.html`);
             });
         })
     );
@@ -155,8 +157,7 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: event.data ? event.data.text() : 'PIM assignment expiring soon',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/badge-72x72.png',
+    icon: `${APP_BASE}icons/app-icon.svg`,
     vibrate: [200, 100, 200],
     tag: 'pim-notification',
     requireInteraction: false

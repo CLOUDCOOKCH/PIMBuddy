@@ -6,7 +6,7 @@
     <title>PIMBuddy - Privileged Identity Management</title>
 
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#00d9ff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,7 +21,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&family=Orbitron:wght@900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script type="module" crossorigin src="/assets/index-B29o0gLS.js"></script>
+  <script type="module" crossorigin src="/assets/index-BWVsmwg1.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/vendor-libs-DR0WLJdd.js">
   <link rel="modulepreload" crossorigin href="/assets/vendor-msal-_oisOUhb.js">
   <link rel="modulepreload" crossorigin href="/assets/utils-B68CIlTQ.js">
@@ -40,9 +40,9 @@
   <link rel="modulepreload" crossorigin href="/assets/page-templatespage-C40ZrFiw.js">
   <link rel="modulepreload" crossorigin href="/assets/page-exportpage-BJblAL28.js">
   <link rel="modulepreload" crossorigin href="/assets/page-settingspage-CK1_T0S5.js">
-  <link rel="modulepreload" crossorigin href="/assets/page-baselinepage-QRc0DzZg.js">
+  <link rel="modulepreload" crossorigin href="/assets/page-baselinepage-B_H2_UCr.js">
   <link rel="modulepreload" crossorigin href="/assets/page-activationspage-Ctb9nQuK.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-DmGEjUqu.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-CD2FD5Qc.css">
 </head>
 <body>
     <div id="app">
@@ -230,7 +230,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('./sw.js')
                     .then((registration) => {
                         console.log('[PWA] Service Worker registered:', registration.scope);
 
