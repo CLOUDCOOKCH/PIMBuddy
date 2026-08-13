@@ -78,7 +78,7 @@ export class BaselinePage extends BasePage {
                                 <i class="fas fa-hammer"></i> Build Your Baseline
                             </button>
                         </div>
-                        ${Object.entries(baselines).filter(([key]) => key !== 'custom-baseline').map(([key, baseline]) => `
+                        ${Object.entries(baselines).map(([key, baseline]) => `
                             <div class="card baseline-card" data-baseline="${key}">
                                 <div class="baseline-header">
                                     <i class="fas ${baseline.icon} baseline-icon"></i>
@@ -176,9 +176,8 @@ export class BaselinePage extends BasePage {
         };
     }
 
-    async openCustomBuilder() {
+    openCustomBuilder() {
         const builder = document.getElementById('custom-baseline-builder');
-        this.customSelectedRoleIds = new Set();
         builder.hidden = false;
         builder.innerHTML = `
             <div class="card custom-builder-card">
@@ -191,10 +190,13 @@ export class BaselinePage extends BasePage {
                     <label class="form-group"><span>Maximum activation</span><select id="custom-duration" class="input"><option value="2">2 hours</option><option value="4" selected>4 hours</option><option value="8">8 hours</option><option value="12">12 hours</option></select></label>
                 </div>
                 <fieldset class="builder-fieldset"><legend>1. Select privileged roles</legend>
-                    <p class="form-hint">Search every role available in your tenant, including custom role definitions. Selected roles are automatically organized into security tiers.</p>
-                    <label class="custom-role-search"><i class="fas fa-magnifying-glass"></i><input id="custom-role-search" class="input" type="search" placeholder="Search roles by name or description…" autocomplete="off"></label>
-                    <div id="custom-role-status" class="form-hint"><i class="fas fa-spinner fa-spin"></i> Loading tenant roles…</div>
-                    <div id="custom-role-grid" class="custom-role-grid"></div>
+                    <p class="form-hint">Select one or more role cards. PIMBuddy automatically organizes them into security tiers.</p>
+                    <div class="custom-role-grid">${this.customRoleCatalog.map(role => `
+                        <label class="custom-role-option">
+                            <input type="checkbox" value="${role.id}" data-tier="${role.tier}" data-name="${role.name}">
+                            <span class="role-option-content"><i class="fas ${role.icon}"></i><span>${role.name}</span><small>Tier ${role.tier}</small></span>
+                        </label>`).join('')}
+                    </div>
                 </fieldset>
                 <fieldset class="builder-fieldset"><legend>2. Add activation safeguards</legend>
                     <div class="safeguard-grid">
@@ -208,66 +210,11 @@ export class BaselinePage extends BasePage {
                     <button class="btn btn-primary btn-lg" onclick="app.pages.baseline.createCustomBaseline()">Continue to group setup <i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>`;
-        builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        await this.loadCustomBuilderRoles();
-    }
-
-    async loadCustomBuilderRoles() {
-        const status = document.getElementById('custom-role-status');
-        let roles = this.customRoleCatalog.map(role => ({ ...role, description: 'Common Microsoft Entra role' }));
-        const result = await graphService.getRoleDefinitions();
-        if (result.success && result.roles.length) {
-            roles = result.roles.map(role => ({
-                id: role.id,
-                name: role.displayName,
-                description: role.description || '',
-                tier: this.getTierForRole(role),
-                icon: role.isBuiltIn === false ? 'fa-puzzle-piece' : 'fa-user-shield',
-                isCustom: role.isBuiltIn === false
-            }));
-            status.textContent = `${roles.length} tenant roles available, including custom roles.`;
-        } else {
-            status.textContent = 'Tenant roles could not be loaded. Showing common roles instead.';
-        }
-        this.customBuilderRoles = roles;
-        this.renderCustomBuilderRoles(roles);
-        document.getElementById('custom-role-search').addEventListener('input', event => {
-            const query = event.target.value.trim().toLocaleLowerCase();
-            const filtered = roles.filter(role => `${role.name} ${role.description}`.toLocaleLowerCase().includes(query));
-            this.renderCustomBuilderRoles(filtered);
-        });
-    }
-
-    getTierForRole(role) {
-        if (role.privilegeLevel === 'critical') return 0;
-        if (role.privilegeLevel === 'high' || role.privilegeLevel === 'medium') return 1;
-        return 2;
-    }
-
-    renderCustomBuilderRoles(roles) {
-        const grid = document.getElementById('custom-role-grid');
-        const selected = this.customSelectedRoleIds || new Set();
-        grid.innerHTML = roles.length ? roles.map(role => `
-            <label class="custom-role-option">
-                <input class="custom-role-checkbox" type="checkbox" value="${this.escapeHtml(role.id)}" ${selected.has(role.id) ? 'checked' : ''}>
-                <span class="role-option-content">
-                    <i class="fas ${role.icon}"></i>
-                    <strong>${this.escapeHtml(role.name)}</strong>
-                    <small>${role.isCustom ? 'Custom role' : `Tier ${role.tier}`} · ${this.escapeHtml(role.description || 'No description')}</small>
-                </span>
-            </label>`).join('') : '<div class="custom-role-empty"><i class="fas fa-search"></i><strong>No matching roles</strong><span>Try a different search term.</span></div>';
-        grid.querySelectorAll('.custom-role-checkbox').forEach(input => input.addEventListener('change', () => {
-            if (input.checked) selected.add(input.value); else selected.delete(input.value);
-            this.customSelectedRoleIds = selected;
-            this.updateCustomRoleCount();
+        builder.querySelectorAll('.custom-role-option input').forEach(input => input.addEventListener('change', () => {
+            const count = builder.querySelectorAll('.custom-role-option input:checked').length;
+            document.getElementById('custom-selection-count').textContent = `${count} role${count === 1 ? '' : 's'} selected`;
         }));
-        this.customSelectedRoleIds = selected;
-        this.updateCustomRoleCount();
-    }
-
-    updateCustomRoleCount() {
-        const count = this.customSelectedRoleIds?.size || 0;
-        document.getElementById('custom-selection-count').textContent = `${count} role${count === 1 ? '' : 's'} selected`;
+        builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     renderSafeguard(id, icon, title, description, checked = false) {
@@ -279,7 +226,7 @@ export class BaselinePage extends BasePage {
     }
 
     createCustomBaseline() {
-        const selectedIds = [...(this.customSelectedRoleIds || [])];
+        const selectedIds = [...document.querySelectorAll('.custom-role-option input:checked')].map(input => input.value);
         if (!selectedIds.length) {
             this.showToast('Select at least one privileged role', 'error');
             return;
@@ -295,7 +242,7 @@ export class BaselinePage extends BasePage {
         };
         const tierNames = ['Critical Infrastructure', 'High Privilege Operations', 'Standard Operations'];
         const tiers = [0, 1, 2].map(tierNumber => {
-            const roles = (this.customBuilderRoles || this.customRoleCatalog).filter(role => role.tier === tierNumber && selectedIds.includes(role.id));
+            const roles = this.customRoleCatalog.filter(role => role.tier === tierNumber && selectedIds.includes(role.id));
             return {
                 tier: tierNumber,
                 name: `Tier ${tierNumber} - ${tierNames[tierNumber]}`,
