@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PIMBuddy shield">
+  <rect width="512" height="512" rx="112" fill="#0a0e27"/>
+  <path d="M256 62 92 124v116c0 105 67 176 164 210 97-34 164-105 164-210V124L256 62Z" fill="#00d9ff"/>
+  <path d="M256 108 136 153v87c0 78 46 132 120 162 74-30 120-84 120-162v-87l-120-45Z" fill="#111936"/>
+  <path d="m205 252 35 35 73-80 31 29-103 112-67-67 31-29Z" fill="#00d9ff"/>
+</svg>

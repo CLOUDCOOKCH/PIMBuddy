@@ -18,6 +18,7 @@ export class BaselinePage extends BasePage {
             groupUsers: {},
             groupCustomizations: {}
         };
+        this.userSearchResults = new Map();
     }
 
     /**
@@ -377,8 +378,9 @@ export class BaselinePage extends BasePage {
             const result = await graphService.searchUsers(query);
 
             if (result.success && result.users.length > 0) {
+                this.userSearchResults = new Map(result.users.map(user => [user.id, user]));
                 resultsDiv.innerHTML = result.users.map(user => `
-                    <div class="user-search-result" onclick="app.pages.baseline.addUser(${tierIndex}, ${groupIndex}, '${user.id}', '${this.escapeHtml(user.displayName)}', '${this.escapeHtml(user.userPrincipalName)}')">
+                    <button type="button" class="user-search-result" data-user-id="${this.escapeHtml(user.id)}">
                         <div class="user-info">
                             <i class="fas fa-user"></i>
                             <div>
@@ -387,8 +389,16 @@ export class BaselinePage extends BasePage {
                             </div>
                         </div>
                         <i class="fas fa-plus-circle"></i>
-                    </div>
+                    </button>
                 `).join('');
+
+                resultsDiv.querySelectorAll('.user-search-result').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const user = this.userSearchResults.get(button.dataset.userId);
+                        if (!user) return;
+                        this.addUser(tierIndex, groupIndex, user.id, user.displayName, user.userPrincipalName);
+                    });
+                });
             } else {
                 resultsDiv.innerHTML = '<div class="search-no-results">No users found</div>';
             }
