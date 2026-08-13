@@ -19,6 +19,18 @@ export class BaselinePage extends BasePage {
             groupCustomizations: {}
         };
         this.userSearchResults = new Map();
+        this.customRoleCatalog = [
+            { id: '62e90394-69f5-4237-9190-012177145e10', name: 'Global Administrator', tier: 0, icon: 'fa-globe' },
+            { id: 'e8611ab8-c189-46e8-94e1-60213ab1f814', name: 'Privileged Role Administrator', tier: 0, icon: 'fa-key' },
+            { id: '194ae4cb-b126-40b2-bd5b-6091b380977d', name: 'Security Administrator', tier: 0, icon: 'fa-shield-halved' },
+            { id: 'fe930be7-5e62-47db-91af-98c3a49a38b1', name: 'User Administrator', tier: 1, icon: 'fa-user-gear' },
+            { id: '29232cdf-9323-42fd-ade2-1d097af3e4de', name: 'Exchange Administrator', tier: 1, icon: 'fa-envelope' },
+            { id: 'f28a1f50-f6e7-4571-818b-6a12f2af6b6c', name: 'SharePoint Administrator', tier: 1, icon: 'fa-share-nodes' },
+            { id: '9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3', name: 'Application Administrator', tier: 1, icon: 'fa-cubes' },
+            { id: '729827e3-9c14-49f7-bb1b-9608f156bbb8', name: 'Helpdesk Administrator', tier: 2, icon: 'fa-headset' },
+            { id: 'fdd7a751-b60b-444a-984c-02652fe8fa1c', name: 'Groups Administrator', tier: 2, icon: 'fa-users-gear' },
+            { id: '69091246-20e8-4a56-aa4d-066075b2a7a8', name: 'Teams Administrator', tier: 2, icon: 'fa-comments' }
+        ];
     }
 
     /**
@@ -44,6 +56,28 @@ export class BaselinePage extends BasePage {
                     <h2 class="step-title"><i class="fas fa-list-check"></i> Step 1: Choose Your Baseline</h2>
 
                     <div class="baseline-grid">
+                        <div class="card baseline-card baseline-card-custom">
+                            <div class="baseline-header">
+                                <i class="fas fa-wand-magic-sparkles baseline-icon"></i>
+                                <h3>Build Your Own Baseline</h3>
+                            </div>
+                            <p class="baseline-desc">Click together the roles and safeguards your organization needs, then review and deploy it.</p>
+                            <div class="baseline-features">
+                                <h4>You decide:</h4>
+                                <ul>
+                                    <li><i class="fas fa-check-circle"></i> Privileged roles to include</li>
+                                    <li><i class="fas fa-check-circle"></i> Activation duration and MFA</li>
+                                    <li><i class="fas fa-check-circle"></i> Approval, ticket, and justification controls</li>
+                                </ul>
+                            </div>
+                            <div class="baseline-stats">
+                                <span class="stat-badge"><i class="fas fa-hand-pointer"></i> Guided builder</span>
+                                <span class="stat-badge"><i class="fas fa-eye"></i> Review first</span>
+                            </div>
+                            <button class="btn btn-primary btn-block" onclick="app.pages.baseline.openCustomBuilder()" ${!this.isConnected() ? 'disabled' : ''}>
+                                <i class="fas fa-hammer"></i> Build Your Baseline
+                            </button>
+                        </div>
                         ${Object.entries(baselines).map(([key, baseline]) => `
                             <div class="card baseline-card" data-baseline="${key}">
                                 <div class="baseline-header">
@@ -70,6 +104,8 @@ export class BaselinePage extends BasePage {
                             </div>
                         `).join('')}
                     </div>
+
+                    <div id="custom-baseline-builder" class="custom-baseline-builder" hidden></div>
                 </div>
 
                 <!-- Step 2: Tier & Group Selection -->
@@ -138,6 +174,94 @@ export class BaselinePage extends BasePage {
             groupUsers: {},
             groupCustomizations: {}
         };
+    }
+
+    openCustomBuilder() {
+        const builder = document.getElementById('custom-baseline-builder');
+        builder.hidden = false;
+        builder.innerHTML = `
+            <div class="card custom-builder-card">
+                <div class="custom-builder-heading">
+                    <div><span class="builder-kicker">CUSTOM BASELINE BUILDER</span><h2>Choose what belongs in your baseline</h2></div>
+                    <button class="btn btn-secondary btn-sm" onclick="app.pages.baseline.closeCustomBuilder()"><i class="fas fa-xmark"></i> Close</button>
+                </div>
+                <div class="builder-form-grid">
+                    <label class="form-group"><span>Baseline name</span><input id="custom-baseline-name" class="input" value="My PIM Baseline" maxlength="80"></label>
+                    <label class="form-group"><span>Maximum activation</span><select id="custom-duration" class="input"><option value="2">2 hours</option><option value="4" selected>4 hours</option><option value="8">8 hours</option><option value="12">12 hours</option></select></label>
+                </div>
+                <fieldset class="builder-fieldset"><legend>1. Select privileged roles</legend>
+                    <p class="form-hint">Select one or more role cards. PIMBuddy automatically organizes them into security tiers.</p>
+                    <div class="custom-role-grid">${this.customRoleCatalog.map(role => `
+                        <label class="custom-role-option">
+                            <input type="checkbox" value="${role.id}" data-tier="${role.tier}" data-name="${role.name}">
+                            <span class="role-option-content"><i class="fas ${role.icon}"></i><span>${role.name}</span><small>Tier ${role.tier}</small></span>
+                        </label>`).join('')}
+                    </div>
+                </fieldset>
+                <fieldset class="builder-fieldset"><legend>2. Add activation safeguards</legend>
+                    <div class="safeguard-grid">
+                        ${this.renderSafeguard('custom-mfa', 'fa-mobile-screen-button', 'Require MFA', 'Verify every activation', true)}
+                        ${this.renderSafeguard('custom-justification', 'fa-message', 'Require justification', 'Capture the business reason', true)}
+                        ${this.renderSafeguard('custom-approval', 'fa-user-check', 'Require approval', 'Route activation to an approver')}
+                        ${this.renderSafeguard('custom-ticket', 'fa-ticket', 'Require ticket', 'Link work to a tracked request')}
+                    </div>
+                </fieldset>
+                <div class="builder-footer"><div><strong id="custom-selection-count">0 roles selected</strong><p>Next, customize groups and review the complete deployment plan.</p></div>
+                    <button class="btn btn-primary btn-lg" onclick="app.pages.baseline.createCustomBaseline()">Continue to group setup <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>`;
+        builder.querySelectorAll('.custom-role-option input').forEach(input => input.addEventListener('change', () => {
+            const count = builder.querySelectorAll('.custom-role-option input:checked').length;
+            document.getElementById('custom-selection-count').textContent = `${count} role${count === 1 ? '' : 's'} selected`;
+        }));
+        builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    renderSafeguard(id, icon, title, description, checked = false) {
+        return `<label class="safeguard-option"><input id="${id}" type="checkbox" ${checked ? 'checked' : ''}><span><i class="fas ${icon}"></i><strong>${title}</strong><small>${description}</small></span></label>`;
+    }
+
+    closeCustomBuilder() {
+        document.getElementById('custom-baseline-builder').hidden = true;
+    }
+
+    createCustomBaseline() {
+        const selectedIds = [...document.querySelectorAll('.custom-role-option input:checked')].map(input => input.value);
+        if (!selectedIds.length) {
+            this.showToast('Select at least one privileged role', 'error');
+            return;
+        }
+        const name = document.getElementById('custom-baseline-name').value.trim() || 'My PIM Baseline';
+        const duration = Number(document.getElementById('custom-duration').value);
+        const policy = {
+            maximumDurationHours: duration,
+            requireMfa: document.getElementById('custom-mfa').checked,
+            requireJustification: document.getElementById('custom-justification').checked,
+            requireApproval: document.getElementById('custom-approval').checked,
+            requireTicketInfo: document.getElementById('custom-ticket').checked
+        };
+        const tierNames = ['Critical Infrastructure', 'High Privilege Operations', 'Standard Operations'];
+        const tiers = [0, 1, 2].map(tierNumber => {
+            const roles = this.customRoleCatalog.filter(role => role.tier === tierNumber && selectedIds.includes(role.id));
+            return {
+                tier: tierNumber,
+                name: `Tier ${tierNumber} - ${tierNames[tierNumber]}`,
+                description: `Custom controls for ${tierNames[tierNumber].toLowerCase()}`,
+                policy: { ...policy },
+                groups: roles.map(role => ({
+                    name: `PIM-Custom-${role.name.replace(/[^a-z0-9]+/gi, '-')}`,
+                    description: `Custom PIM access for the ${role.name} role`,
+                    roles: [role.id]
+                }))
+            };
+        }).filter(tier => tier.groups.length);
+        baselineService.setCustomBaseline({
+            name,
+            description: `A custom baseline with ${selectedIds.length} privileged role${selectedIds.length === 1 ? '' : 's'} and organization-selected activation safeguards.`,
+            features: ['Custom role selection', `${duration}-hour activation window`, 'Organization-selected safeguards'],
+            tiers
+        });
+        this.selectBaseline('custom-baseline');
     }
 
     /**
