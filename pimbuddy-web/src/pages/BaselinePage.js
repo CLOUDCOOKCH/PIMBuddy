@@ -77,6 +77,10 @@ export class BaselinePage extends BasePage {
                             <button class="btn btn-primary btn-block" id="open-custom-baseline-builder" type="button">
                                 <i class="fas fa-hammer"></i> Build Your Baseline
                             </button>
+                            <button class="btn btn-secondary btn-block" id="import-custom-baseline" type="button">
+                                <i class="fas fa-file-import"></i> Import Baseline
+                            </button>
+                            <input id="import-custom-baseline-file" type="file" accept="application/json,.json" hidden>
                         </div>
                         ${Object.entries(baselines).map(([key, baseline]) => `
                             <div class="card baseline-card" data-baseline="${key}">
@@ -180,11 +184,16 @@ export class BaselinePage extends BasePage {
         // the global `app` object used by legacy inline handlers.
         container.querySelector('#open-custom-baseline-builder')
             ?.addEventListener('click', () => this.openCustomBuilder());
+        const importInput = container.querySelector('#import-custom-baseline-file');
+        container.querySelector('#import-custom-baseline')
+            ?.addEventListener('click', () => importInput?.click());
+        importInput?.addEventListener('change', event => this.importCustomBaseline(event.target.files?.[0]));
     }
 
-    openCustomBuilder() {
+    async openCustomBuilder() {
         const builder = document.getElementById('custom-baseline-builder');
         builder.hidden = false;
+        if (this.isConnected()) await this.loadAvailableRoles();
         builder.innerHTML = `
             <div class="card custom-builder-card">
                 <div class="custom-builder-heading">
@@ -197,10 +206,12 @@ export class BaselinePage extends BasePage {
                 </div>
                 <fieldset class="builder-fieldset"><legend>1. Select privileged roles</legend>
                     <p class="form-hint">Select one or more role cards. PIMBuddy automatically organizes them into security tiers.</p>
+                    <label class="role-search-field"><i class="fas fa-magnifying-glass"></i><input id="custom-role-search" class="input" type="search" placeholder="Search ${this.customRoleCatalog.length} available roles..." aria-label="Search available roles" autocomplete="off"></label>
+                    <p id="custom-role-search-status" class="form-hint role-search-status" aria-live="polite">Showing all ${this.customRoleCatalog.length} roles</p>
                     <div class="custom-role-grid">${this.customRoleCatalog.map(role => `
-                        <label class="custom-role-option">
-                            <input type="checkbox" value="${role.id}" data-tier="${role.tier}" data-name="${role.name}">
-                            <span class="role-option-content"><i class="fas ${role.icon}"></i><span>${role.name}</span><small>Tier ${role.tier}</small></span>
+                        <label class="custom-role-option" data-search-name="${this.escapeAttribute(role.name.toLowerCase())}">
+                            <input type="checkbox" value="${this.escapeAttribute(role.id)}" data-tier="${role.tier}" data-name="${this.escapeAttribute(role.name)}">
+                            <span class="role-option-content"><i class="fas ${role.icon}"></i><span>${this.escapeAttribute(role.name)}</span><small>Tier ${role.tier}</small></span>
                         </label>`).join('')}
                     </div>
                 </fieldset>
@@ -220,6 +231,14 @@ export class BaselinePage extends BasePage {
             ?.addEventListener('click', () => this.closeCustomBuilder());
         builder.querySelector('#create-custom-baseline')
             ?.addEventListener('click', () => this.createCustomBaseline());
+        const roleSearch = builder.querySelector('#custom-role-search');
+        const filterRoles = () => this.filterCustomRoles(builder, roleSearch?.value || '');
+        roleSearch?.addEventListener('input', filterRoles);
+        // Some browsers only emit `search` when the native clear button is
+        // used on an input[type=search]. Handle it as well so clearing always
+        // restores the complete catalog.
+        roleSearch?.addEventListener('search', filterRoles);
+        roleSearch?.addEventListener('keyup', filterRoles);
         builder.querySelectorAll('.custom-role-option input').forEach(input => input.addEventListener('change', () => {
             const count = builder.querySelectorAll('.custom-role-option input:checked').length;
             document.getElementById('custom-selection-count').textContent = `${count} role${count === 1 ? '' : 's'} selected`;
@@ -227,8 +246,139 @@ export class BaselinePage extends BasePage {
         builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    filterCustomRoles(builder, searchTerm) {
+        const normalize = value => String(value)
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLocaleLowerCase()
+            .trim();
+        const query = normalize(searchTerm);
+        const options = [...builder.querySelectorAll('.custom-role-option')];
+        let visibleCount = 0;
+
+        options.forEach(option => {
+            // Use rendered text rather than an HTML data attribute. This also
+            // searches the tier label and works for role names containing
+            // quotes, ampersands, accents, or other encoded characters.
+            const matches = !query || normalize(option.textContent).includes(query);
+            option.hidden = !matches;
+            option.classList.toggle('role-search-hidden', !matches);
+            if (matches) visibleCount += 1;
+        });
+
+        const status = builder.querySelector('#custom-role-search-status');
+        if (status) {
+            status.textContent = query
+                ? `${visibleCount} of ${options.length} roles match “${searchTerm.trim()}”`
+                : `Showing all ${options.length} roles`;
+        }
+        return visibleCount;
+    }
+
+    exportCustomBaseline() {
+        const storedBaseline = baselineService.getBaseline('custom-baseline');
+        const baseline = this.captureVisibleBaseline(storedBaseline);
+        if (!baseline) {
+            this.showToast('Create or import a custom baseline before exporting it', 'error');
+            return;
+        }
+
+        const payload = {
+            format: 'pimbuddy-baseline',
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            baseline: {
+                name: baseline.name,
+                description: baseline.description,
+                features: baseline.features,
+                tiers: baseline.tiers
+            }
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const safeName = baseline.name.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'custom-baseline';
+        link.href = url;
+        link.download = `${safeName}.pimbuddy-baseline.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+        this.showToast('Custom baseline exported', 'success');
+    }
+
+    captureVisibleBaseline(baseline) {
+        if (!baseline || this.baselineState.selectedBaseline !== 'custom-baseline') return baseline;
+        const tierCheckboxes = [...document.querySelectorAll('.tier-select')];
+        if (!tierCheckboxes.length) return baseline;
+
+        const tiers = tierCheckboxes.filter(input => input.checked).map(tierInput => {
+            const tierIndex = Number(tierInput.dataset.tier);
+            const tier = baseline.tiers[tierIndex];
+            const groups = [...document.querySelectorAll(`.group-select[data-tier="${tierIndex}"]:checked`)]
+                .map(groupInput => {
+                    const groupIndex = Number(groupInput.closest('.baseline-group-item')?.dataset.groupIndex);
+                    const group = tier.groups[groupIndex];
+                    if (!group) return null;
+                    const name = document.querySelector(`.group-name-input[data-tier="${tierIndex}"][data-group-index="${groupIndex}"]`)?.value.trim();
+                    const description = document.querySelector(`.group-desc-input[data-tier="${tierIndex}"][data-group-index="${groupIndex}"]`)?.value.trim();
+                    return { ...group, name: name || group.name, description: description || group.description };
+                })
+                .filter(Boolean);
+            return { ...tier, groups };
+        }).filter(tier => tier.groups.length);
+
+        return { ...baseline, tiers };
+    }
+
+    async importCustomBaseline(file) {
+        if (!file) return;
+        try {
+            const payload = JSON.parse(await file.text());
+            if (payload.format !== 'pimbuddy-baseline' || payload.version !== 1) {
+                throw new Error('This is not a supported PIMBuddy baseline file');
+            }
+            const baseline = baselineService.normalizeCustomBaseline(payload.baseline);
+            baselineService.setCustomBaseline(baseline);
+            this.showToast(`Imported “${baseline.name}”`, 'success');
+            this.selectBaseline('custom-baseline');
+        } catch (error) {
+            this.showToast(`Could not import baseline: ${error.message}`, 'error');
+        }
+    }
+
+    async loadAvailableRoles() {
+        if (!this.isConnected()) return;
+
+        const result = await graphService.getRoleDefinitions();
+        if (!result.success || !result.roles.length) {
+            this.showToast('Could not load additional tenant roles. Showing the default role list.', 'warning');
+            return;
+        }
+
+        const tierByPrivilege = { critical: 0, high: 1, medium: 2, low: 2 };
+        const defaultsById = new Map(this.customRoleCatalog.map(role => [role.id, role]));
+        result.roles.forEach(role => {
+            const id = role.templateId || role.id;
+            const existing = defaultsById.get(id);
+            defaultsById.set(id, {
+                id,
+                name: role.displayName,
+                tier: existing?.tier ?? tierByPrivilege[role.privilegeLevel] ?? 2,
+                icon: existing?.icon || 'fa-user-shield'
+            });
+        });
+        this.customRoleCatalog = [...defaultsById.values()].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
     renderSafeguard(id, icon, title, description, checked = false) {
         return `<label class="safeguard-option"><input id="${id}" type="checkbox" ${checked ? 'checked' : ''}><span><i class="fas ${icon}"></i><strong>${title}</strong><small>${description}</small></span></label>`;
+    }
+
+    escapeAttribute(value) {
+        return String(value)
+            .replaceAll('&', '&amp;')
+            .replaceAll('"', '&quot;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;');
     }
 
     closeCustomBuilder() {
@@ -288,6 +438,7 @@ export class BaselinePage extends BasePage {
             <div class="card">
                 <h3><i class="fas fa-info-circle"></i> Selected: ${baseline.name}</h3>
                 <p>${baseline.description}</p>
+                ${baselineKey === 'custom-baseline' ? `<button class="btn btn-secondary btn-sm" id="export-custom-baseline" type="button"><i class="fas fa-file-export"></i> Export this baseline</button>` : ''}
             </div>
 
             <div class="tiers-list">
@@ -339,7 +490,7 @@ export class BaselinePage extends BasePage {
                                                     <span>${group.name}</span>
                                                 </div>
                                             </label>
-                                            <button class="btn btn-sm btn-secondary" onclick="app.pages.baseline.toggleGroupDetails(${index}, ${gIndex})" aria-label="Toggle group details">
+                                            <button class="btn btn-sm btn-secondary group-details-toggle" type="button" data-tier="${index}" data-group-index="${gIndex}" aria-expanded="false" aria-controls="group-details-${index}-${gIndex}" aria-label="Edit ${group.name}">
                                                 <i class="fas fa-chevron-down"></i>
                                             </button>
                                         </div>
@@ -423,6 +574,9 @@ export class BaselinePage extends BasePage {
         // Navigate to step 2
         this.goToStep(2);
 
+        document.getElementById('export-custom-baseline')
+            ?.addEventListener('click', () => this.exportCustomBaseline());
+
         // Initialize user selections storage
         this.baselineState.groupUsers = {};
         this.baselineState.groupCustomizations = {};
@@ -437,6 +591,17 @@ export class BaselinePage extends BasePage {
                     gcb.disabled = !e.target.checked;
                 });
             });
+        });
+
+        // Bind the disclosure buttons directly. Depending on a browser-global
+        // `event` made the panel fail to open in browsers that do not expose it,
+        // which also made the group name fields impossible to edit.
+        document.querySelectorAll('.group-details-toggle').forEach(button => {
+            button.addEventListener('click', () => this.toggleGroupDetails(
+                button.dataset.tier,
+                button.dataset.groupIndex,
+                button
+            ));
         });
 
         // Add event listeners for assignment type toggle
@@ -488,17 +653,20 @@ export class BaselinePage extends BasePage {
     /**
      * Toggle group details visibility
      */
-    toggleGroupDetails(tierIndex, groupIndex) {
+    toggleGroupDetails(tierIndex, groupIndex, button = null) {
         const detailsDiv = document.getElementById(`group-details-${tierIndex}-${groupIndex}`);
-        const button = event.target.closest('button');
-        const icon = button.querySelector('i');
+        const toggleButton = button || document.querySelector(`.group-details-toggle[data-tier="${tierIndex}"][data-group-index="${groupIndex}"]`);
+        const icon = toggleButton?.querySelector('i');
 
         if (detailsDiv.style.display === 'none' || !detailsDiv.style.display) {
             detailsDiv.style.display = 'block';
-            icon.className = 'fas fa-chevron-up';
+            if (icon) icon.className = 'fas fa-chevron-up';
+            toggleButton?.setAttribute('aria-expanded', 'true');
+            detailsDiv.querySelector('.group-name-input')?.focus();
         } else {
             detailsDiv.style.display = 'none';
-            icon.className = 'fas fa-chevron-down';
+            if (icon) icon.className = 'fas fa-chevron-down';
+            toggleButton?.setAttribute('aria-expanded', 'false');
         }
     }
 

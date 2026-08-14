@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { baselineService } from '../src/services/baselineService.js';
+import { graphService } from '../src/services/graphService.js';
 import { BaselinePage } from '../src/pages/BaselinePage.js';
 
 test('custom baseline builder remains clickable before connecting', async () => {
@@ -15,8 +16,7 @@ test('custom baseline builder remains clickable before connecting', async () => 
     const container = {
         innerHTML: '',
         querySelector(selector) {
-            assert.equal(selector, '#open-custom-baseline-builder');
-            return builderButton;
+            return selector === '#open-custom-baseline-builder' ? builderButton : null;
         }
     };
     const page = new BaselinePage({ isConnected: false });
@@ -42,6 +42,10 @@ test('custom builder actions use bound listeners instead of the global app objec
         },
         '#create-custom-baseline': {
             addEventListener(eventName, handler) { handlers[`create:${eventName}`] = handler; }
+        },
+        '#custom-role-search': {
+            value: '',
+            addEventListener(eventName, handler) { handlers[`search:${eventName}`] = handler; }
         }
     };
     const builder = {
@@ -66,6 +70,9 @@ test('custom builder actions use bound listeners instead of the global app objec
         assert.doesNotMatch(builder.innerHTML, /onclick=/);
         assert.equal(typeof handlers['close:click'], 'function');
         assert.equal(typeof handlers['create:click'], 'function');
+        assert.equal(typeof handlers['search:input'], 'function');
+        assert.equal(typeof handlers['search:search'], 'function');
+        assert.equal(typeof handlers['search:keyup'], 'function');
         handlers['close:click']();
         handlers['create:click']();
         assert.equal(closed, true);
@@ -105,4 +112,180 @@ test('custom baselines use the standard baseline validation and deployment shape
     assert.equal(custom.name, 'Test Baseline');
     assert.equal(custom.tiers[0].groups.length, 1);
     assert.equal(custom.tiers[0].policy.maximumDurationHours, 4);
+});
+
+test('group detail toggles do not depend on a browser-global event', () => {
+    const attributes = {};
+    let focused = false;
+    const icon = { className: 'fas fa-chevron-down' };
+    const button = {
+        querySelector: () => icon,
+        setAttribute(name, value) { attributes[name] = value; }
+    };
+    const details = {
+        style: { display: 'none' },
+        querySelector: () => ({ focus() { focused = true; } })
+    };
+    const originalDocument = globalThis.document;
+    globalThis.document = { getElementById: () => details };
+
+    try {
+        const page = new BaselinePage({ isConnected: false });
+        page.toggleGroupDetails(0, 0, button);
+        assert.equal(details.style.display, 'block');
+        assert.equal(icon.className, 'fas fa-chevron-up');
+        assert.equal(attributes['aria-expanded'], 'true');
+        assert.equal(focused, true);
+
+        page.toggleGroupDetails(0, 0, button);
+        assert.equal(details.style.display, 'none');
+        assert.equal(attributes['aria-expanded'], 'false');
+    } finally {
+        globalThis.document = originalDocument;
+    }
+});
+
+test('connected custom builder merges all tenant roles into the catalog', async () => {
+    const originalGetRoleDefinitions = graphService.getRoleDefinitions;
+    graphService.getRoleDefinitions = async () => ({
+        success: true,
+        roles: [{
+            id: 'role-definition-id',
+            templateId: 'custom-role-template',
+            displayName: 'Authentication Administrator',
+            privilegeLevel: 'high'
+        }]
+    });
+
+    try {
+        const page = new BaselinePage({ isConnected: true });
+        await page.loadAvailableRoles();
+        const role = page.customRoleCatalog.find(item => item.id === 'custom-role-template');
+        assert.deepEqual(role, {
+            id: 'custom-role-template',
+            name: 'Authentication Administrator',
+            tier: 1,
+            icon: 'fa-user-shield'
+        });
+    } finally {
+        graphService.getRoleDefinitions = originalGetRoleDefinitions;
+    }
+});
+
+test('custom role search filters rendered role names and reports matches', () => {
+    const makeOption = textContent => {
+        const classes = new Set();
+        return {
+            textContent,
+            hidden: false,
+            classList: {
+                toggle(name, enabled) {
+                    if (enabled) classes.add(name);
+                    else classes.delete(name);
+                },
+                contains: name => classes.has(name)
+            }
+        };
+    };
+    const roles = [
+        makeOption('Authentication Administrator Tier 1'),
+        makeOption('Global Administrator Tier 0'),
+        makeOption('Éxchange Administrator Tier 1')
+    ];
+    const status = { textContent: '' };
+    const builder = {
+        querySelectorAll: selector => selector === '.custom-role-option' ? roles : [],
+        querySelector: selector => selector === '#custom-role-search-status' ? status : null
+    };
+    const page = new BaselinePage({ isConnected: false });
+
+    assert.equal(page.filterCustomRoles(builder, 'auth'), 1);
+    assert.deepEqual(roles.map(role => role.hidden), [false, true, true]);
+    assert.equal(roles[1].classList.contains('role-search-hidden'), true);
+    assert.equal(status.textContent, '1 of 3 roles match “auth”');
+
+    assert.equal(page.filterCustomRoles(builder, 'exchange'), 1, 'search should ignore accents');
+    assert.deepEqual(roles.map(role => role.hidden), [true, true, false]);
+
+    assert.equal(page.filterCustomRoles(builder, ''), 3);
+    assert.deepEqual(roles.map(role => role.hidden), [false, false, false]);
+    assert.equal(status.textContent, 'Showing all 3 roles');
+});
+
+test('custom baseline export format can be normalized for a later import', () => {
+    const exportedBaseline = {
+        name: 'Operations baseline',
+        description: 'Reusable configuration',
+        features: ['Custom role selection'],
+        tiers: [{
+            tier: 1,
+            name: 'Operations',
+            description: 'Operational roles',
+            policy: {
+                maximumDurationHours: 4,
+                requireMfa: true,
+                requireJustification: true,
+                requireTicketInfo: false,
+                requireApproval: false
+            },
+            groups: [{
+                name: 'PIM-Operations',
+                description: 'Operations access',
+                roles: ['role-one', 'role-one', 'role-two']
+            }]
+        }]
+    };
+
+    const imported = baselineService.normalizeCustomBaseline(exportedBaseline);
+    assert.equal(imported.name, 'Operations baseline');
+    assert.deepEqual(imported.tiers[0].groups[0].roles, ['role-one', 'role-two']);
+    baselineService.setCustomBaseline(imported);
+    assert.deepEqual(baselineService.getBaseline('custom-baseline').tiers, imported.tiers);
+});
+
+test('custom baseline import rejects malformed files', () => {
+    assert.throws(
+        () => baselineService.normalizeCustomBaseline({ name: 'Broken', tiers: [] }),
+        /At least one tier is required/
+    );
+    assert.throws(
+        () => baselineService.normalizeCustomBaseline({
+            name: 'Broken',
+            tiers: [{ policy: { maximumDurationHours: 4 }, groups: [{ name: 'No roles', roles: [] }] }]
+        }),
+        /needs at least one valid role/
+    );
+});
+
+test('baseline export captures edited group names from the builder', () => {
+    const originalDocument = globalThis.document;
+    const tierCheckbox = { checked: true, dataset: { tier: '0' } };
+    const groupCheckbox = {
+        closest: () => ({ dataset: { groupIndex: '0' } })
+    };
+    globalThis.document = {
+        querySelectorAll(selector) {
+            if (selector === '.tier-select') return [tierCheckbox];
+            if (selector === '.group-select[data-tier="0"]:checked') return [groupCheckbox];
+            return [];
+        },
+        querySelector(selector) {
+            if (selector.startsWith('.group-name-input')) return { value: 'PIM-Edited-Group' };
+            if (selector.startsWith('.group-desc-input')) return { value: 'Edited description' };
+            return null;
+        }
+    };
+
+    try {
+        const page = new BaselinePage({ isConnected: false });
+        page.baselineState.selectedBaseline = 'custom-baseline';
+        const captured = page.captureVisibleBaseline({
+            name: 'Custom',
+            tiers: [{ groups: [{ name: 'Original', description: 'Original', roles: ['role-one'] }] }]
+        });
+        assert.equal(captured.tiers[0].groups[0].name, 'PIM-Edited-Group');
+        assert.equal(captured.tiers[0].groups[0].description, 'Edited description');
+    } finally {
+        globalThis.document = originalDocument;
+    }
 });
