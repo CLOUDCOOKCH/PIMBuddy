@@ -206,8 +206,7 @@ export class BaselinePage extends BasePage {
                 </div>
                 <fieldset class="builder-fieldset"><legend>1. Select privileged roles</legend>
                     <p class="form-hint">Select one or more role cards. PIMBuddy automatically organizes them into security tiers.</p>
-                    <label class="role-search-field"><i class="fas fa-magnifying-glass"></i><input id="custom-role-search" class="input" type="search" placeholder="Search ${this.customRoleCatalog.length} available roles..." aria-label="Search available roles" autocomplete="off"></label>
-                    <p id="custom-role-search-status" class="form-hint role-search-status" aria-live="polite">Showing all ${this.customRoleCatalog.length} roles</p>
+                    <label class="role-search-field"><i class="fas fa-magnifying-glass"></i><input id="custom-role-search" class="input" type="search" placeholder="Search ${this.customRoleCatalog.length} available roles..." aria-label="Search available roles"></label>
                     <div class="custom-role-grid">${this.customRoleCatalog.map(role => `
                         <label class="custom-role-option" data-search-name="${this.escapeAttribute(role.name.toLowerCase())}">
                             <input type="checkbox" value="${this.escapeAttribute(role.id)}" data-tier="${role.tier}" data-name="${this.escapeAttribute(role.name)}">
@@ -231,118 +230,17 @@ export class BaselinePage extends BasePage {
             ?.addEventListener('click', () => this.closeCustomBuilder());
         builder.querySelector('#create-custom-baseline')
             ?.addEventListener('click', () => this.createCustomBaseline());
-        const roleSearch = builder.querySelector('#custom-role-search');
-        const filterRoles = () => this.filterCustomRoles(builder, roleSearch?.value || '');
-        roleSearch?.addEventListener('input', filterRoles);
-        // Some browsers only emit `search` when the native clear button is
-        // used on an input[type=search]. Handle it as well so clearing always
-        // restores the complete catalog.
-        roleSearch?.addEventListener('search', filterRoles);
-        roleSearch?.addEventListener('keyup', filterRoles);
+        builder.querySelector('#custom-role-search')?.addEventListener('input', event => {
+            const query = event.target.value.trim().toLowerCase();
+            builder.querySelectorAll('.custom-role-option').forEach(option => {
+                option.hidden = !option.dataset.searchName.includes(query);
+            });
+        });
         builder.querySelectorAll('.custom-role-option input').forEach(input => input.addEventListener('change', () => {
             const count = builder.querySelectorAll('.custom-role-option input:checked').length;
             document.getElementById('custom-selection-count').textContent = `${count} role${count === 1 ? '' : 's'} selected`;
         }));
         builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    filterCustomRoles(builder, searchTerm) {
-        const normalize = value => String(value)
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLocaleLowerCase()
-            .trim();
-        const query = normalize(searchTerm);
-        const options = [...builder.querySelectorAll('.custom-role-option')];
-        let visibleCount = 0;
-
-        options.forEach(option => {
-            // Use rendered text rather than an HTML data attribute. This also
-            // searches the tier label and works for role names containing
-            // quotes, ampersands, accents, or other encoded characters.
-            const matches = !query || normalize(option.textContent).includes(query);
-            option.hidden = !matches;
-            option.classList.toggle('role-search-hidden', !matches);
-            if (matches) visibleCount += 1;
-        });
-
-        const status = builder.querySelector('#custom-role-search-status');
-        if (status) {
-            status.textContent = query
-                ? `${visibleCount} of ${options.length} roles match “${searchTerm.trim()}”`
-                : `Showing all ${options.length} roles`;
-        }
-        return visibleCount;
-    }
-
-    exportCustomBaseline() {
-        const storedBaseline = baselineService.getBaseline('custom-baseline');
-        const baseline = this.captureVisibleBaseline(storedBaseline);
-        if (!baseline) {
-            this.showToast('Create or import a custom baseline before exporting it', 'error');
-            return;
-        }
-
-        const payload = {
-            format: 'pimbuddy-baseline',
-            version: 1,
-            exportedAt: new Date().toISOString(),
-            baseline: {
-                name: baseline.name,
-                description: baseline.description,
-                features: baseline.features,
-                tiers: baseline.tiers
-            }
-        };
-        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        const safeName = baseline.name.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'custom-baseline';
-        link.href = url;
-        link.download = `${safeName}.pimbuddy-baseline.json`;
-        link.click();
-        URL.revokeObjectURL(url);
-        this.showToast('Custom baseline exported', 'success');
-    }
-
-    captureVisibleBaseline(baseline) {
-        if (!baseline || this.baselineState.selectedBaseline !== 'custom-baseline') return baseline;
-        const tierCheckboxes = [...document.querySelectorAll('.tier-select')];
-        if (!tierCheckboxes.length) return baseline;
-
-        const tiers = tierCheckboxes.filter(input => input.checked).map(tierInput => {
-            const tierIndex = Number(tierInput.dataset.tier);
-            const tier = baseline.tiers[tierIndex];
-            const groups = [...document.querySelectorAll(`.group-select[data-tier="${tierIndex}"]:checked`)]
-                .map(groupInput => {
-                    const groupIndex = Number(groupInput.closest('.baseline-group-item')?.dataset.groupIndex);
-                    const group = tier.groups[groupIndex];
-                    if (!group) return null;
-                    const name = document.querySelector(`.group-name-input[data-tier="${tierIndex}"][data-group-index="${groupIndex}"]`)?.value.trim();
-                    const description = document.querySelector(`.group-desc-input[data-tier="${tierIndex}"][data-group-index="${groupIndex}"]`)?.value.trim();
-                    return { ...group, name: name || group.name, description: description || group.description };
-                })
-                .filter(Boolean);
-            return { ...tier, groups };
-        }).filter(tier => tier.groups.length);
-
-        return { ...baseline, tiers };
-    }
-
-    async importCustomBaseline(file) {
-        if (!file) return;
-        try {
-            const payload = JSON.parse(await file.text());
-            if (payload.format !== 'pimbuddy-baseline' || payload.version !== 1) {
-                throw new Error('This is not a supported PIMBuddy baseline file');
-            }
-            const baseline = baselineService.normalizeCustomBaseline(payload.baseline);
-            baselineService.setCustomBaseline(baseline);
-            this.showToast(`Imported “${baseline.name}”`, 'success');
-            this.selectBaseline('custom-baseline');
-        } catch (error) {
-            this.showToast(`Could not import baseline: ${error.message}`, 'error');
-        }
     }
 
     async loadAvailableRoles() {

@@ -2606,9 +2606,8 @@ select.input {
 .custom-role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .75rem; margin-top: 1rem; }
 .role-search-field { display: flex; align-items: center; gap: .65rem; max-width: 32rem; margin-top: 1rem; color: var(--text-secondary); }
 .role-search-field .input { width: 100%; }
-.role-search-status { min-height: 1.25rem; margin: .4rem 0 0 2rem; }
 .custom-role-option, .safeguard-option { position: relative; }
-.custom-role-option[hidden], .custom-role-option.role-search-hidden { display: none !important; }
+.custom-role-option[hidden] { display: none; }
 .custom-role-option input, .safeguard-option input {
     position: absolute;
     width: 1px;
