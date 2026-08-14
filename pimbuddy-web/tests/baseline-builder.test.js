@@ -16,8 +16,7 @@ test('custom baseline builder remains clickable before connecting', async () => 
     const container = {
         innerHTML: '',
         querySelector(selector) {
-            assert.equal(selector, '#open-custom-baseline-builder');
-            return builderButton;
+            return selector === '#open-custom-baseline-builder' ? builderButton : null;
         }
     };
     const page = new BaselinePage({ isConnected: false });
@@ -43,6 +42,10 @@ test('custom builder actions use bound listeners instead of the global app objec
         },
         '#create-custom-baseline': {
             addEventListener(eventName, handler) { handlers[`create:${eventName}`] = handler; }
+        },
+        '#custom-role-search': {
+            value: '',
+            addEventListener(eventName, handler) { handlers[`search:${eventName}`] = handler; }
         }
     };
     const builder = {
@@ -67,6 +70,9 @@ test('custom builder actions use bound listeners instead of the global app objec
         assert.doesNotMatch(builder.innerHTML, /onclick=/);
         assert.equal(typeof handlers['close:click'], 'function');
         assert.equal(typeof handlers['create:click'], 'function');
+        assert.equal(typeof handlers['search:input'], 'function');
+        assert.equal(typeof handlers['search:search'], 'function');
+        assert.equal(typeof handlers['search:keyup'], 'function');
         handlers['close:click']();
         handlers['create:click']();
         assert.equal(closed, true);

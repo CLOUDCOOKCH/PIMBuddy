@@ -77,6 +77,10 @@ export class BaselinePage extends BasePage {
                             <button class="btn btn-primary btn-block" id="open-custom-baseline-builder" type="button">
                                 <i class="fas fa-hammer"></i> Build Your Baseline
                             </button>
+                            <button class="btn btn-secondary btn-block" id="import-custom-baseline" type="button">
+                                <i class="fas fa-file-import"></i> Import Baseline
+                            </button>
+                            <input id="import-custom-baseline-file" type="file" accept="application/json,.json" hidden>
                         </div>
                         ${Object.entries(baselines).map(([key, baseline]) => `
                             <div class="card baseline-card" data-baseline="${key}">
@@ -180,6 +184,10 @@ export class BaselinePage extends BasePage {
         // the global `app` object used by legacy inline handlers.
         container.querySelector('#open-custom-baseline-builder')
             ?.addEventListener('click', () => this.openCustomBuilder());
+        const importInput = container.querySelector('#import-custom-baseline-file');
+        container.querySelector('#import-custom-baseline')
+            ?.addEventListener('click', () => importInput?.click());
+        importInput?.addEventListener('change', event => this.importCustomBaseline(event.target.files?.[0]));
     }
 
     async openCustomBuilder() {
@@ -328,6 +336,7 @@ export class BaselinePage extends BasePage {
             <div class="card">
                 <h3><i class="fas fa-info-circle"></i> Selected: ${baseline.name}</h3>
                 <p>${baseline.description}</p>
+                ${baselineKey === 'custom-baseline' ? `<button class="btn btn-secondary btn-sm" id="export-custom-baseline" type="button"><i class="fas fa-file-export"></i> Export this baseline</button>` : ''}
             </div>
 
             <div class="tiers-list">
@@ -462,6 +471,9 @@ export class BaselinePage extends BasePage {
 
         // Navigate to step 2
         this.goToStep(2);
+
+        document.getElementById('export-custom-baseline')
+            ?.addEventListener('click', () => this.exportCustomBaseline());
 
         // Initialize user selections storage
         this.baselineState.groupUsers = {};

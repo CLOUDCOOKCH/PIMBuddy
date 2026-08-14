@@ -321,6 +321,54 @@ class BaselineService {
         };
     }
 
+    normalizeCustomBaseline(value) {
+        if (!value || typeof value !== 'object') throw new Error('Baseline data is missing');
+        if (typeof value.name !== 'string' || !value.name.trim()) throw new Error('Baseline name is required');
+        if (!Array.isArray(value.tiers) || value.tiers.length === 0) throw new Error('At least one tier is required');
+
+        const tiers = value.tiers.map((tier, tierIndex) => {
+            if (!tier || !Array.isArray(tier.groups) || tier.groups.length === 0) {
+                throw new Error(`Tier ${tierIndex + 1} must contain at least one group`);
+            }
+            const maximumDurationHours = Number(tier.policy?.maximumDurationHours);
+            if (![2, 4, 6, 8, 12].includes(maximumDurationHours)) {
+                throw new Error(`Tier ${tierIndex + 1} has an invalid activation duration`);
+            }
+            return {
+                tier: Number.isInteger(tier.tier) ? tier.tier : tierIndex,
+                name: String(tier.name || `Tier ${tierIndex}`),
+                description: String(tier.description || ''),
+                policy: {
+                    maximumDurationHours,
+                    requireMfa: Boolean(tier.policy?.requireMfa),
+                    requireJustification: Boolean(tier.policy?.requireJustification),
+                    requireTicketInfo: Boolean(tier.policy?.requireTicketInfo),
+                    requireApproval: Boolean(tier.policy?.requireApproval)
+                },
+                groups: tier.groups.map((group, groupIndex) => {
+                    if (typeof group?.name !== 'string' || !group.name.trim()) {
+                        throw new Error(`Group ${groupIndex + 1} in tier ${tierIndex + 1} needs a name`);
+                    }
+                    if (!Array.isArray(group.roles) || group.roles.length === 0 || group.roles.some(role => typeof role !== 'string')) {
+                        throw new Error(`Group “${group.name}” needs at least one valid role`);
+                    }
+                    return {
+                        name: group.name.trim(),
+                        description: String(group.description || ''),
+                        roles: [...new Set(group.roles)]
+                    };
+                })
+            };
+        });
+
+        return {
+            name: value.name.trim().slice(0, 80),
+            description: String(value.description || ''),
+            features: Array.isArray(value.features) ? value.features.map(String) : ['Imported custom baseline'],
+            tiers
+        };
+    }
+
     /**
      * Get all baseline configurations
      */
