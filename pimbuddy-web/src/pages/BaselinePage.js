@@ -230,11 +230,18 @@ export class BaselinePage extends BasePage {
             ?.addEventListener('click', () => this.closeCustomBuilder());
         builder.querySelector('#create-custom-baseline')
             ?.addEventListener('click', () => this.createCustomBaseline());
-        builder.querySelector('#custom-role-search')?.addEventListener('input', event => {
+        const roleSearch = builder.querySelector('#custom-role-search');
+        const filterRoles = event => {
             const query = event.target.value.trim().toLowerCase();
             builder.querySelectorAll('.custom-role-option').forEach(option => {
                 option.hidden = !option.dataset.searchName.includes(query);
             });
+        };
+        // `input` handles normal typing and paste, while `search` catches the
+        // native clear button. Keep `keyup` as a fallback for older browsers
+        // and embedded webviews that do not consistently emit either event.
+        ['input', 'search', 'keyup'].forEach(eventName => {
+            roleSearch?.addEventListener(eventName, filterRoles);
         });
         builder.querySelectorAll('.custom-role-option input').forEach(input => input.addEventListener('change', () => {
             const count = builder.querySelectorAll('.custom-role-option input:checked').length;
