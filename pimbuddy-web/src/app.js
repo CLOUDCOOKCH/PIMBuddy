@@ -5,7 +5,6 @@
 
 import { authService } from './services/authService.js';
 import { graphService } from './services/graphService.js';
-import { bootstrapService } from './services/bootstrapService.js';
 import { templateService } from './services/templateService.js';
 import { pimmaidService } from './services/pimmaidService.js';
 import { baselineService } from './services/baselineService.js';

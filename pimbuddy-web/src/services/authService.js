@@ -28,7 +28,7 @@ class AuthService {
 
         const msalConfig = getMsalConfig();
         if (!msalConfig) {
-            console.log('MSAL not configured - bootstrap required');
+            console.log('MSAL not configured - manual app registration setup required');
             return false;
         }
 
@@ -58,7 +58,7 @@ class AuthService {
     }
 
     /**
-     * Re-initialize after bootstrap (when config changes)
+     * Re-initialize after the manually supplied configuration changes
      */
     async reinitialize() {
         this.msalInstance = null;

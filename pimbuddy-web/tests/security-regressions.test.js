@@ -20,3 +20,13 @@ test('PWA entry points are deployment-base relative', async () => {
     assert.equal(manifest.scope, './');
     assert.ok(manifest.icons.every(icon => icon.src.startsWith('./')));
 });
+
+test('sign in uses only the manually configured app registration', async () => {
+    const appSource = await readFile(new URL('../src/app.js', import.meta.url), 'utf8');
+    const authSource = await readFile(new URL('../src/services/authService.js', import.meta.url), 'utf8');
+
+    assert.doesNotMatch(appSource, /bootstrapService|runBootstrap|bootstrapLogin/);
+    assert.doesNotMatch(authSource, /bootstrapService|runBootstrap|bootstrapLogin/);
+    assert.match(appSource, /localStorage\.setItem\('pimbuddy-app-config'/);
+    assert.match(authSource, /this\.msalInstance\.loginPopup/);
+});
