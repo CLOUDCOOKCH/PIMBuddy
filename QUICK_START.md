@@ -62,21 +62,10 @@ In your app registration:
 
 ### 4. Configure PIMBuddy (1 min)
 
-**Option A: Automatic Bootstrap (Recommended)**
-
-Just skip this step! PIMBuddy will detect the missing configuration and guide you through the setup wizard on first run.
-
-**Option B: Manual Configuration**
-
-Edit `pimbuddy-web/src/config/authConfig.js` (only if you want to pre-configure):
-
-```javascript
-// Add this at the top of the file
-localStorage.setItem('pimbuddy-app-config', JSON.stringify({
-    clientId: "YOUR_CLIENT_ID_HERE",
-    tenantId: "YOUR_TENANT_ID_HERE"
-}));
-```
+PIMBuddy uses the app registration you created above; it never creates another
+registration during sign-in. On first run, click **Setup**, enter the
+**Application (client) ID** and **Directory (tenant) ID** from that registration,
+then click **Save & Connect**.
 
 ### 5. Run PIMBuddy (1 min)
 

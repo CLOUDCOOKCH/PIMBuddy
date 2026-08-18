@@ -413,9 +413,8 @@ npm run build
 **Error**: Bootstrap screen appears
 
 **Solution**:
-This is expected on first visit. Either:
-1. **Bootstrap automatically**: Click "Bootstrap App Registration" and follow wizard
-2. **Manual configuration**: Use the bootstrap feature to save config to localStorage
+This is expected on first visit. Click **Setup**, enter the application and tenant
+IDs from your existing registration, and click **Save & Connect**.
 
 The configuration is saved in browser's localStorage, so users only need to configure once per browser.
 
